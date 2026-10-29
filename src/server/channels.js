@@ -36,4 +36,12 @@ export const MIRAKL_CHANNELS = [
 
 export const MIRAKL_IGNORED_STATES = ["CANCELED", "REFUSED"];
 
-export const ALL_CHANNELS = [...CHANNELS, ...MIRAKL_CHANNELS];
+export const LOCAL_CHANNELS = [
+  { key: "holland_barrett", label: "Holland & Barrett", currency: "GBP" },
+];
+
+export const ALL_CHANNELS = [
+  ...CHANNELS,
+  ...MIRAKL_CHANNELS,
+  ...LOCAL_CHANNELS,
+];

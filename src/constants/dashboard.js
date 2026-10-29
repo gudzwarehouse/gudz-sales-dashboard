@@ -13,7 +13,8 @@ export const CHANNEL_COLORS = {
   temu_uk: "#f97316",
   tesco: "#0ea5e9",
   superdrug: "#ec4899",
+  holland_barrett: "#16a34a",
 };
 
 export const REQUEST_TIMEOUT_MS = 90000;
-export const SKELETON_COUNT = 6;
+export const SKELETON_COUNT = 7;

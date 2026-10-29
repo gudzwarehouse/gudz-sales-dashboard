@@ -1,4 +1,4 @@
-import { ALL_CHANNELS } from "../server/channels";
+import { ALL_CHANNELS, LOCAL_CHANNELS } from "../server/channels";
 import {
   CACHE_MIN_AGE_DAYS,
   isEntry,
@@ -43,6 +43,8 @@ function readCredentials() {
     },
   };
 }
+
+const isLocal = (key) => LOCAL_CHANNELS.some((c) => c.key === key);
 
 function findNeededDays({ wanted, cache, cacheableUpTo, refresh }) {
   const needed = {};
@@ -101,7 +103,7 @@ export default async function handler(req, res) {
         if (errors[key]) continue;
         for (const [day, entries] of Object.entries(fetched.days)) {
           (fresh[day] ||= {})[key] = entries[key];
-          if (day <= cacheableUpTo) {
+          if (day <= cacheableUpTo && !isLocal(key)) {
             cache[day] = { ...cache[day], [key]: entries[key] };
             cacheChanged = true;
           }

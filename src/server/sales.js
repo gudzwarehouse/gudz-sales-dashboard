@@ -1,12 +1,14 @@
 import {
   ALL_CHANNELS,
   CHANNELS,
+  LOCAL_CHANNELS,
   MIRAKL_CHANNELS,
   MIRAKL_IGNORED_STATES,
 } from "./channels";
 import { fetchChannelAdvisorOrders } from "./channelAdvisor";
 import { isEntry } from "./cache";
 import { addDays, eachDay, londonDayOf, londonDayStartUtc } from "./dates";
+import { readHollandBarrettDays } from "./hollandBarrett";
 import { fetchMiraklOrders } from "./mirakl";
 
 const CA_ENV_FIELDS = {
@@ -58,7 +60,14 @@ function emptyDays(from, to, keys) {
   return days;
 }
 
-async function loadChannelAdvisor({ account, creds, keys, since, until, record }) {
+async function loadChannelAdvisor({
+  account,
+  creds,
+  keys,
+  since,
+  until,
+  record,
+}) {
   const channels = CHANNELS.filter(
     (c) => c.account === account && keys.has(c.key),
   );
@@ -84,7 +93,12 @@ async function loadMirakl({ channel, creds, since, until, record }) {
   );
   for (const order of orders) {
     if (MIRAKL_IGNORED_STATES.includes(order.order_state)) continue;
-    record(channel.key, order.created_date, order.total_price, order.currency_iso_code);
+    record(
+      channel.key,
+      order.created_date,
+      order.total_price,
+      order.currency_iso_code,
+    );
   }
 }
 
@@ -117,6 +131,16 @@ export async function fetchDays(from, to, { accounts, mirakl, keys }) {
   ];
 
   await Promise.all([
+    ...(keys.has("holland_barrett")
+      ? [
+          guard(["holland_barrett"], async () => {
+            const saved = readHollandBarrettDays(eachDay(from, to));
+            for (const [day, entry] of Object.entries(saved)) {
+              days[day].holland_barrett = { ...entry };
+            }
+          }),
+        ]
+      : []),
     ...accountNames.map((account) =>
       guard(
         CHANNELS.filter((c) => c.account === account && keys.has(c.key)).map(
@@ -135,7 +159,13 @@ export async function fetchDays(from, to, { accounts, mirakl, keys }) {
     ),
     ...MIRAKL_CHANNELS.filter((c) => keys.has(c.key)).map((channel) =>
       guard([channel.key], () =>
-        loadMirakl({ channel, creds: mirakl[channel.key], since, until, record }),
+        loadMirakl({
+          channel,
+          creds: mirakl[channel.key],
+          since,
+          until,
+          record,
+        }),
       ),
     ),
   ]);
