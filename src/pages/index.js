@@ -21,18 +21,21 @@ const money = (value, currency) =>
   new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(value);
 
 const IndexPage = () => {
+  const [day, setDay] = React.useState("today");
   const [data, setData] = React.useState(null);
   const [error, setError] = React.useState(null);
 
   React.useEffect(() => {
-    fetch("/api/today-sales")
+    setData(null);
+    setError(null);
+    fetch(`/api/today-sales?day=${day}`)
       .then(async (response) => {
         const body = await response.json();
         if (!response.ok) throw new Error(body.error || response.statusText);
         setData(body);
       })
       .catch((err) => setError(err.message));
-  }, []);
+  }, [day]);
 
   const totalOrders = data?.channels.reduce((s, c) => s + c.orderCount, 0) ?? 0;
   // Channels trade in different currencies, so totals are kept per currency.
@@ -44,7 +47,25 @@ const IndexPage = () => {
 
   return (
     <main style={pageStyles}>
-      <h1>Today's Sales</h1>
+      <h1>{day === "today" ? "Today's" : "Yesterday's"} Sales</h1>
+      <div style={{ display: "flex", gap: 8 }}>
+        {["today", "yesterday"].map((d) => (
+          <button
+            key={d}
+            onClick={() => setDay(d)}
+            style={{
+              padding: "6px 14px",
+              borderRadius: 6,
+              border: "1px solid #232129",
+              cursor: "pointer",
+              background: d === day ? "#232129" : "#fff",
+              color: d === day ? "#fff" : "#232129",
+            }}
+          >
+            {d === "today" ? "Today" : "Yesterday"}
+          </button>
+        ))}
+      </div>
       {error && <p style={{ color: "#b00020" }}>Failed to load: {error}</p>}
       {!data && !error && <p>Loading…</p>}
       {data && (

@@ -45,16 +45,24 @@ const MIRAKL_CHANNELS = [
 ];
 const MIRAKL_IGNORED_STATES = ["CANCELED", "REFUSED"];
 
-async function fetchMiraklOrders(baseUrl, apiKey, since, pageSize = 100) {
+async function fetchMiraklOrders(
+  baseUrl,
+  apiKey,
+  since,
+  until,
+  pageSize = 100,
+) {
   const orders = [];
   let offset = 0;
   for (;;) {
     const url = new URL("/api/orders", baseUrl);
-    url.search = new URLSearchParams({
+    const params = {
       start_date: since,
       max: String(pageSize),
       offset: String(offset),
-    }).toString();
+    };
+    if (until) params.end_date = until;
+    url.search = new URLSearchParams(params).toString();
     const response = await fetch(url, {
       headers: { Authorization: apiKey, Accept: "application/json" },
     });
@@ -194,7 +202,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const since = londonMidnightUtc();
+    // ?day=yesterday returns the previous London calendar day; default is today.
+    const todayStart = londonMidnightUtc();
+    const yesterday = req.query?.day === "yesterday";
+    // Noon the previous day is safely inside it, even across DST changes.
+    const since = yesterday
+      ? londonMidnightUtc(new Date(Date.parse(todayStart) - 12 * 3600 * 1000))
+      : todayStart;
+    const until = yesterday ? todayStart : null;
     const tokens = {};
     await Promise.all(
       Object.entries(accounts).map(async ([account, creds]) => {
@@ -206,7 +221,8 @@ export default async function handler(req, res) {
       CHANNELS.map(async (channel) => {
         const filter =
           `SiteName eq '${channel.siteName}'` +
-          ` and CheckoutDateUtc ge ${since}`;
+          ` and CheckoutDateUtc ge ${since}` +
+          (until ? ` and CheckoutDateUtc lt ${until}` : "");
         const orders = await fetchAllOrders(
           tokens[channel.account],
           accounts[channel.account].profileId,
@@ -236,9 +252,9 @@ export default async function handler(req, res) {
     const miraklChannels = await Promise.all(
       MIRAKL_CHANNELS.map(async (channel) => {
         const { apiKey, baseUrl } = mirakl[channel.key];
-        const orders = (await fetchMiraklOrders(baseUrl, apiKey, since)).filter(
-          (o) => !MIRAKL_IGNORED_STATES.includes(o.order_state),
-        );
+        const orders = (
+          await fetchMiraklOrders(baseUrl, apiKey, since, until)
+        ).filter((o) => !MIRAKL_IGNORED_STATES.includes(o.order_state));
         const revenue = orders.reduce(
           (sum, o) => sum + Number(o.total_price || 0),
           0,
@@ -260,7 +276,9 @@ export default async function handler(req, res) {
       }),
     );
 
-    res.status(200).json({ since, channels: [...channels, ...miraklChannels] });
+    res
+      .status(200)
+      .json({ since, until, channels: [...channels, ...miraklChannels] });
   } catch (error) {
     res.status(502).json({ error: error.message });
   }
