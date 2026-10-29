@@ -1,21 +1,5 @@
 import * as React from "react";
-
-const pageStyles = {
-  color: "#232129",
-  padding: 48,
-  fontFamily: "-apple-system, Roboto, sans-serif",
-};
-const gridStyles = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: 16,
-  marginTop: 24,
-};
-const cardStyles = {
-  border: "1px solid #ddd",
-  borderRadius: 8,
-  padding: 20,
-};
+import "../styles/dashboard.css";
 
 const TITLES = {
   today: "Today's Sales",
@@ -28,6 +12,14 @@ const BUTTONS = {
   yesterday: "Yesterday",
   last30: "Last 30 days",
   custom: "Custom range",
+};
+const CHANNEL_COLORS = {
+  amazon_uk: "#f59e0b",
+  amazon_ie: "#10b981",
+  ebay_uk: "#3b82f6",
+  temu_uk: "#f97316",
+  tesco: "#0ea5e9",
+  superdrug: "#ec4899",
 };
 
 const money = (value, currency) =>
@@ -62,31 +54,38 @@ const IndexPage = () => {
     revenueByCurrency[c.currency] =
       (revenueByCurrency[c.currency] ?? 0) + c.revenue;
   });
+  const currencyTotal = (currency) => revenueByCurrency[currency] || 0;
+
+  const loading = !data && !error && (day !== "custom" || custom);
 
   return (
-    <main style={pageStyles}>
-      <h1>{TITLES[day]}</h1>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {Object.keys(TITLES).map((d) => (
-          <button
-            key={d}
-            onClick={() => setDay(d)}
-            style={{
-              padding: "6px 14px",
-              borderRadius: 6,
-              border: "1px solid #232129",
-              cursor: "pointer",
-              background: d === day ? "#232129" : "#fff",
-              color: d === day ? "#fff" : "#232129",
-            }}
-          >
-            {BUTTONS[d]}
-          </button>
-        ))}
-      </div>
+    <main className="dash">
+      <header className="dash-header">
+        <div className="dash-brand">
+          <div className="dash-logo">G</div>
+          <div>
+            <h1>Gudz Sales Dashboard</h1>
+            <p className="dash-sub">All marketplaces in one view</p>
+          </div>
+        </div>
+        <div className="segmented" role="tablist">
+          {Object.keys(TITLES).map((d) => (
+            <button
+              key={d}
+              role="tab"
+              aria-selected={d === day}
+              className={d === day ? "active" : ""}
+              onClick={() => setDay(d)}
+            >
+              {BUTTONS[d]}
+            </button>
+          ))}
+        </div>
+      </header>
+
       {day === "custom" && (
         <form
-          style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}
+          className="range-form"
           onSubmit={(e) => {
             e.preventDefault();
             setCustom({ ...draft });
@@ -110,35 +109,86 @@ const IndexPage = () => {
           <button type="submit">Apply</button>
         </form>
       )}
-      {data && data.from !== data.to && (
-        <p style={{ marginBottom: 0 }}>
-          {data.from} to {data.to}
-        </p>
+
+      <div className="section-head">
+        <h2>{TITLES[day]}</h2>
+        {data && data.from !== data.to && (
+          <span className="range-label">
+            {data.from} to {data.to}
+          </span>
+        )}
+        {data && data.from === data.to && (
+          <span className="range-label">{data.from}</span>
+        )}
+      </div>
+
+      {error && <div className="notice error">Failed to load: {error}</div>}
+      {day === "custom" && !custom && (
+        <div className="notice">
+          Pick a start and end date, then press Apply.
+        </div>
       )}
-      {error && <p style={{ color: "#b00020" }}>Failed to load: {error}</p>}
-      {!data && !error && (day !== "custom" || custom) && <p>Loading…</p>}
-      {day === "custom" && !custom && <p>Pick a start and end date.</p>}
+
+      {loading && (
+        <div className="channels">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="card skeleton" />
+          ))}
+        </div>
+      )}
+
       {data && (
         <>
-          <p>
-            {totalOrders} orders ·{" "}
-            {Object.entries(revenueByCurrency)
-              .map(([currency, total]) => money(total, currency))
-              .join(" + ")}
-          </p>
-          <div style={gridStyles}>
-            {data.channels.map((channel) => (
-              <div key={channel.key} style={cardStyles}>
-                <h2 style={{ marginTop: 0 }}>{channel.label}</h2>
-                <div style={{ fontSize: 32, fontWeight: 600 }}>
-                  {channel.orderCount}
-                </div>
-                <div>orders</div>
-                <div style={{ marginTop: 12 }}>
-                  {money(channel.revenue, channel.currency)}
+          <div className="kpis">
+            <div className="card">
+              <div className="kpi-label">Total orders</div>
+              <div className="kpi-value">
+                {totalOrders.toLocaleString("en-GB")}
+              </div>
+            </div>
+            {Object.keys(revenueByCurrency).map((currency) => (
+              <div className="card" key={currency}>
+                <div className="kpi-label">Revenue ({currency})</div>
+                <div className="kpi-value">
+                  {money(currencyTotal(currency), currency)}
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="section-head">
+            <h2>By channel</h2>
+          </div>
+          <div className="channels">
+            {data.channels.map((channel) => {
+              const total = currencyTotal(channel.currency);
+              const pct = total ? (channel.revenue / total) * 100 : 0;
+              return (
+                <div
+                  key={channel.key}
+                  className="card channel"
+                  style={{ "--channel": CHANNEL_COLORS[channel.key] }}
+                >
+                  <div className="channel-name">
+                    <span className="dot" />
+                    {channel.label}
+                  </div>
+                  <div className="channel-orders">
+                    {channel.orderCount.toLocaleString("en-GB")}
+                    <small>orders</small>
+                  </div>
+                  <div className="channel-revenue">
+                    {money(channel.revenue, channel.currency)}
+                  </div>
+                  <div className="share">
+                    <div style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="share-label">
+                    {pct.toFixed(1)}% of {channel.currency} revenue
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </>
       )}
@@ -148,4 +198,4 @@ const IndexPage = () => {
 
 export default IndexPage;
 
-export const Head = () => <title>Today's Sales</title>;
+export const Head = () => <title>Gudz Sales Dashboard</title>;
