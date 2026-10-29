@@ -64,15 +64,12 @@ body {
 }
 
 .dash-logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(135deg, var(--accent), #a78bfa);
-  color: #fff;
-  font-weight: 700;
-  font-size: 20px;
+  width: 64px;
+  height: 64px;
+  padding: 8px;
+  border-radius: 14px;
+  object-fit: contain;
+  background: #fff;
   box-shadow: var(--shadow);
 }
 

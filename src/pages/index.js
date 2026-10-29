@@ -1,5 +1,6 @@
 import * as React from "react";
 import "../styles/dashboard.css";
+import logo from "../images/gudz-logo.webp";
 
 const TITLES = {
   today: "Today's Sales",
@@ -62,7 +63,7 @@ const IndexPage = () => {
     <main className="dash">
       <header className="dash-header">
         <div className="dash-brand">
-          <div className="dash-logo">G</div>
+          <img className="dash-logo" src={logo} alt="Gudz" />
           <div>
             <h1>Gudz Sales Dashboard</h1>
             <p className="dash-sub">All marketplaces in one view</p>
@@ -198,4 +199,9 @@ const IndexPage = () => {
 
 export default IndexPage;
 
-export const Head = () => <title>Gudz Sales Dashboard</title>;
+export const Head = () => (
+  <>
+    <title>Gudz Sales Dashboard</title>
+    <link rel="icon" href={logo} type="image/webp" />
+  </>
+);
