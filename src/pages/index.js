@@ -17,10 +17,8 @@ const cardStyles = {
   padding: 20,
 };
 
-const money = (value) =>
-  new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(
-    value,
-  );
+const money = (value, currency) =>
+  new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(value);
 
 const IndexPage = () => {
   const [data, setData] = React.useState(null);
@@ -37,7 +35,12 @@ const IndexPage = () => {
   }, []);
 
   const totalOrders = data?.channels.reduce((s, c) => s + c.orderCount, 0) ?? 0;
-  const totalRevenue = data?.channels.reduce((s, c) => s + c.revenue, 0) ?? 0;
+  // Channels trade in different currencies, so totals are kept per currency.
+  const revenueByCurrency = {};
+  data?.channels.forEach((c) => {
+    revenueByCurrency[c.currency] =
+      (revenueByCurrency[c.currency] ?? 0) + c.revenue;
+  });
 
   return (
     <main style={pageStyles}>
@@ -47,7 +50,10 @@ const IndexPage = () => {
       {data && (
         <>
           <p>
-            {totalOrders} orders · {money(totalRevenue)}
+            {totalOrders} orders ·{" "}
+            {Object.entries(revenueByCurrency)
+              .map(([currency, total]) => money(total, currency))
+              .join(" + ")}
           </p>
           <div style={gridStyles}>
             {data.channels.map((channel) => (
@@ -57,7 +63,9 @@ const IndexPage = () => {
                   {channel.orderCount}
                 </div>
                 <div>orders</div>
-                <div style={{ marginTop: 12 }}>{money(channel.revenue)}</div>
+                <div style={{ marginTop: 12 }}>
+                  {money(channel.revenue, channel.currency)}
+                </div>
               </div>
             ))}
           </div>

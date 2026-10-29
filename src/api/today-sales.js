@@ -1,15 +1,40 @@
 // Server-side Gatsby Function: GET /api/today-sales
 // Pulls today's orders (Order Date >= today, same as the Rithum
-// "Today's Sales" view) for Amazon UK, eBay UK and Temu UK from the
+// "Today's Sales" view) for Amazon UK, eBay UK, Temu UK and Amazon Ireland from the
 // ChannelAdvisor REST API. Credentials stay on the server.
 
 const TOKEN_URL = "https://api.channeladvisor.com/oauth2/token";
 const ORDERS_URL = "https://api.channeladvisor.com/v1/Orders";
 
 const CHANNELS = [
-  { key: "amazon_uk", label: "Amazon UK", siteName: "Amazon UK" },
-  { key: "ebay_uk", label: "eBay UK", siteName: "eBay Fixed Price UK" },
-  { key: "temu_uk", label: "Temu UK", siteName: "Temu UK" },
+  {
+    key: "amazon_uk",
+    label: "Amazon UK",
+    siteName: "Amazon UK",
+    account: "UK",
+    currency: "GBP",
+  },
+  {
+    key: "ebay_uk",
+    label: "eBay UK",
+    siteName: "eBay Fixed Price UK",
+    account: "UK",
+    currency: "GBP",
+  },
+  {
+    key: "temu_uk",
+    label: "Temu UK",
+    siteName: "Temu UK",
+    account: "UK",
+    currency: "GBP",
+  },
+  {
+    key: "amazon_ie",
+    label: "Amazon Ireland",
+    siteName: "Amazon Seller Central - IE",
+    account: "IRE",
+    currency: "EUR",
+  },
 ];
 
 // Midnight today in Europe/London, expressed as a UTC ISO string (handles BST).
@@ -37,15 +62,15 @@ function londonMidnightUtc(now = new Date()) {
   return guess.toISOString().replace(".000Z", "Z");
 }
 
-async function getAccessToken() {
+async function getAccessToken(creds) {
   const response = await fetch(TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       grant_type: "refresh_token",
-      client_id: process.env.GATSBY_CA_UK_APPLICATION_ID,
-      client_secret: process.env.GATSBY_CA_UK_SHARED_SECRET,
-      refresh_token: process.env.GATSBY_CA_UK_REFRESH_TOKEN,
+      client_id: creds.applicationId,
+      client_secret: creds.sharedSecret,
+      refresh_token: creds.refreshToken,
     }),
   });
   if (!response.ok) {
@@ -56,7 +81,7 @@ async function getAccessToken() {
   return (await response.json()).access_token;
 }
 
-async function fetchAllOrders(token, filter, pageSize = 100) {
+async function fetchAllOrders(token, profileId, filter, pageSize = 100) {
   const orders = [];
   let skip = 0;
   for (;;) {
@@ -65,7 +90,7 @@ async function fetchAllOrders(token, filter, pageSize = 100) {
       $filter: filter,
       $top: String(pageSize),
       $skip: String(skip),
-      profileid: process.env.GATSBY_CA_UK_PROFILE_ID,
+      profileid: profileId,
     }).toString();
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
@@ -85,13 +110,31 @@ async function fetchAllOrders(token, filter, pageSize = 100) {
 
 export default async function handler(req, res) {
   // Static process.env.X references so Gatsby's function bundler can inline them.
-  const creds = {
-    CA_UK_APPLICATION_ID: process.env.GATSBY_CA_UK_APPLICATION_ID,
-    CA_UK_SHARED_SECRET: process.env.GATSBY_CA_UK_SHARED_SECRET,
-    CA_UK_REFRESH_TOKEN: process.env.GATSBY_CA_UK_REFRESH_TOKEN,
-    CA_UK_PROFILE_ID: process.env.GATSBY_CA_UK_PROFILE_ID,
+  const accounts = {
+    UK: {
+      applicationId: process.env.GATSBY_CA_UK_APPLICATION_ID,
+      sharedSecret: process.env.GATSBY_CA_UK_SHARED_SECRET,
+      refreshToken: process.env.GATSBY_CA_UK_REFRESH_TOKEN,
+      profileId: process.env.GATSBY_CA_UK_PROFILE_ID,
+    },
+    IRE: {
+      applicationId: process.env.GATSBY_CA_IRE_APPLICATION_ID,
+      sharedSecret: process.env.GATSBY_CA_IRE_SHARED_SECRET,
+      refreshToken: process.env.GATSBY_CA_IRE_REFRESH_TOKEN,
+      profileId: process.env.GATSBY_CA_IRE_PROFILE_ID,
+    },
   };
-  const missing = Object.keys(creds).filter((name) => !creds[name]);
+  const envNames = {
+    applicationId: "APPLICATION_ID",
+    sharedSecret: "SHARED_SECRET",
+    refreshToken: "REFRESH_TOKEN",
+    profileId: "PROFILE_ID",
+  };
+  const missing = Object.entries(accounts).flatMap(([account, creds]) =>
+    Object.keys(creds)
+      .filter((field) => !creds[field])
+      .map((field) => `GATSBY_CA_${account}_${envNames[field]}`),
+  );
   if (missing.length) {
     return res
       .status(500)
@@ -100,14 +143,23 @@ export default async function handler(req, res) {
 
   try {
     const since = londonMidnightUtc();
-    const token = await getAccessToken();
+    const tokens = {};
+    await Promise.all(
+      Object.entries(accounts).map(async ([account, creds]) => {
+        tokens[account] = await getAccessToken(creds);
+      }),
+    );
 
     const channels = await Promise.all(
       CHANNELS.map(async (channel) => {
         const filter =
           `SiteName eq '${channel.siteName}'` +
           ` and CheckoutDateUtc ge ${since}`;
-        const orders = await fetchAllOrders(token, filter);
+        const orders = await fetchAllOrders(
+          tokens[channel.account],
+          accounts[channel.account].profileId,
+          filter,
+        );
         const revenue = orders.reduce(
           (sum, o) => sum + Number(o.TotalPrice || 0),
           0,
@@ -115,6 +167,7 @@ export default async function handler(req, res) {
         return {
           key: channel.key,
           label: channel.label,
+          currency: channel.currency,
           orderCount: orders.length,
           revenue: Math.round(revenue * 100) / 100,
           orders: orders.map((o) => ({
@@ -128,7 +181,7 @@ export default async function handler(req, res) {
       }),
     );
 
-    res.status(200).json({ since, currency: "GBP", channels });
+    res.status(200).json({ since, channels });
   } catch (error) {
     res.status(502).json({ error: error.message });
   }
