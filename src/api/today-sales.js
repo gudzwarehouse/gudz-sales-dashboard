@@ -37,6 +37,40 @@ const CHANNELS = [
   },
 ];
 
+// Mirakl marketplaces (Tesco, Superdrug) are queried directly via the Mirakl
+// MMP API (GET /api/orders), authenticated with the shop API key.
+const MIRAKL_CHANNELS = [
+  { key: "tesco", label: "Tesco", currency: "GBP" },
+  { key: "superdrug", label: "Superdrug", currency: "GBP" },
+];
+const MIRAKL_IGNORED_STATES = ["CANCELED", "REFUSED"];
+
+async function fetchMiraklOrders(baseUrl, apiKey, since, pageSize = 100) {
+  const orders = [];
+  let offset = 0;
+  for (;;) {
+    const url = new URL("/api/orders", baseUrl);
+    url.search = new URLSearchParams({
+      start_date: since,
+      max: String(pageSize),
+      offset: String(offset),
+    }).toString();
+    const response = await fetch(url, {
+      headers: { Authorization: apiKey, Accept: "application/json" },
+    });
+    if (!response.ok) {
+      throw new Error(
+        `Mirakl orders request failed (${response.status}): ${(await response.text()).slice(0, 300)}`,
+      );
+    }
+    const page = (await response.json()).orders || [];
+    orders.push(...page);
+    offset += page.length;
+    if (page.length < pageSize) break;
+  }
+  return orders;
+}
+
 // Midnight today in Europe/London, expressed as a UTC ISO string (handles BST).
 function londonMidnightUtc(now = new Date()) {
   const parts = new Intl.DateTimeFormat("en-GB", {
@@ -124,17 +158,35 @@ export default async function handler(req, res) {
       profileId: process.env.GATSBY_CA_IRE_PROFILE_ID,
     },
   };
+  const mirakl = {
+    tesco: {
+      apiKey: process.env.GATSBY_MIRAKL_TESCO_API_KEY,
+      baseUrl: process.env.GATSBY_MIRAKL_TESCO_BASE_URL,
+    },
+    superdrug: {
+      apiKey: process.env.GATSBY_MIRAKL_SUPERDRUG_API_KEY,
+      baseUrl: process.env.GATSBY_MIRAKL_SUPERDRUG_BASE_URL,
+    },
+  };
+  const miraklMissing = Object.entries(mirakl).flatMap(([name, creds]) =>
+    [
+      !creds.apiKey && `GATSBY_MIRAKL_${name.toUpperCase()}_API_KEY`,
+      !creds.baseUrl && `GATSBY_MIRAKL_${name.toUpperCase()}_BASE_URL`,
+    ].filter(Boolean),
+  );
   const envNames = {
     applicationId: "APPLICATION_ID",
     sharedSecret: "SHARED_SECRET",
     refreshToken: "REFRESH_TOKEN",
     profileId: "PROFILE_ID",
   };
-  const missing = Object.entries(accounts).flatMap(([account, creds]) =>
-    Object.keys(creds)
-      .filter((field) => !creds[field])
-      .map((field) => `GATSBY_CA_${account}_${envNames[field]}`),
-  );
+  const missing = Object.entries(accounts)
+    .flatMap(([account, creds]) =>
+      Object.keys(creds)
+        .filter((field) => !creds[field])
+        .map((field) => `GATSBY_CA_${account}_${envNames[field]}`),
+    )
+    .concat(miraklMissing);
   if (missing.length) {
     return res
       .status(500)
@@ -181,7 +233,34 @@ export default async function handler(req, res) {
       }),
     );
 
-    res.status(200).json({ since, channels });
+    const miraklChannels = await Promise.all(
+      MIRAKL_CHANNELS.map(async (channel) => {
+        const { apiKey, baseUrl } = mirakl[channel.key];
+        const orders = (await fetchMiraklOrders(baseUrl, apiKey, since)).filter(
+          (o) => !MIRAKL_IGNORED_STATES.includes(o.order_state),
+        );
+        const revenue = orders.reduce(
+          (sum, o) => sum + Number(o.total_price || 0),
+          0,
+        );
+        return {
+          key: channel.key,
+          label: channel.label,
+          currency: orders[0]?.currency_iso_code || channel.currency,
+          orderCount: orders.length,
+          revenue: Math.round(revenue * 100) / 100,
+          orders: orders.map((o) => ({
+            siteOrderId: o.order_id,
+            orderDate: o.created_date,
+            total: o.total_price,
+            shippingStatus: o.order_state,
+            paymentStatus: o.payment_workflow,
+          })),
+        };
+      }),
+    );
+
+    res.status(200).json({ since, channels: [...channels, ...miraklChannels] });
   } catch (error) {
     res.status(502).json({ error: error.message });
   }
