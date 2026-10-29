@@ -6,3 +6,6 @@ public
 .env
 .env.*
 !.env.example
+
+# Per-day sales cache
+.sales-cache/
