@@ -32,6 +32,7 @@ const IndexPage = () => {
   const [custom, setCustom] = React.useState(null); // applied { from, to }
   const [data, setData] = React.useState(null);
   const [error, setError] = React.useState(null);
+  const [attempt, setAttempt] = React.useState(0); // bumped by "Try again"
 
   React.useEffect(() => {
     if (day === "custom" && !custom) return;
@@ -39,22 +40,54 @@ const IndexPage = () => {
     setError(null);
     const query =
       day === "custom" ? `from=${custom.from}&to=${custom.to}` : `range=${day}`;
-    fetch(`/api/today-sales?${query}`)
+    // Aborting on cleanup stops a slow earlier request overwriting a newer one.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort("timeout"), 90000);
+    fetch(`/api/today-sales?${query}`, { signal: controller.signal })
       .then(async (response) => {
-        const body = await response.json();
+        let body;
+        try {
+          body = await response.json();
+        } catch {
+          throw new Error(
+            `The server returned an unexpected response (${response.status})`,
+          );
+        }
         if (!response.ok) throw new Error(body.error || response.statusText);
+        if (!Array.isArray(body.channels)) {
+          throw new Error("The server response was missing channel data");
+        }
         setData(body);
       })
-      .catch((err) => setError(err.message));
-  }, [day, custom]);
+      .catch((err) => {
+        if (controller.signal.aborted && controller.signal.reason !== "timeout")
+          return;
+        setError(
+          controller.signal.reason === "timeout"
+            ? "The request took too long"
+            : err instanceof TypeError
+              ? "Could not reach the server - check your connection"
+              : err.message,
+        );
+      })
+      .finally(() => clearTimeout(timeout));
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [day, custom, attempt]);
 
+  const failedChannels = data?.channels.filter((c) => c.error) ?? [];
   const totalOrders = data?.channels.reduce((s, c) => s + c.orderCount, 0) ?? 0;
   // Channels trade in different currencies, so totals are kept per currency.
+  // Channels that failed to load are left out rather than counted as zero.
   const revenueByCurrency = {};
-  data?.channels.forEach((c) => {
-    revenueByCurrency[c.currency] =
-      (revenueByCurrency[c.currency] ?? 0) + c.revenue;
-  });
+  data?.channels
+    .filter((c) => !c.error)
+    .forEach((c) => {
+      revenueByCurrency[c.currency] =
+        (revenueByCurrency[c.currency] ?? 0) + c.revenue;
+    });
   const currencyTotal = (currency) => revenueByCurrency[currency] || 0;
 
   const loading = !data && !error && (day !== "custom" || custom);
@@ -123,7 +156,26 @@ const IndexPage = () => {
         )}
       </div>
 
-      {error && <div className="notice error">Failed to load: {error}</div>}
+      {error && (
+        <div className="notice error">
+          <span>Failed to load: {error}</span>
+          <button className="retry" onClick={() => setAttempt((n) => n + 1)}>
+            Try again
+          </button>
+        </div>
+      )}
+      {failedChannels.length > 0 && (
+        <div className="notice error">
+          <span>
+            {failedChannels.map((c) => c.label).join(", ")} could not be loaded,
+            so the totals below leave{" "}
+            {failedChannels.length === 1 ? "it" : "them"} out.
+          </span>
+          <button className="retry" onClick={() => setAttempt((n) => n + 1)}>
+            Try again
+          </button>
+        </div>
+      )}
       {day === "custom" && !custom && (
         <div className="notice">
           Pick a start and end date, then press Apply.
@@ -174,19 +226,28 @@ const IndexPage = () => {
                     <span className="dot" />
                     {channel.label}
                   </div>
-                  <div className="channel-orders">
-                    {channel.orderCount.toLocaleString("en-GB")}
-                    <small>orders</small>
-                  </div>
-                  <div className="channel-revenue">
-                    {money(channel.revenue, channel.currency)}
-                  </div>
-                  <div className="share">
-                    <div style={{ width: `${pct}%` }} />
-                  </div>
-                  <div className="share-label">
-                    {pct.toFixed(1)}% of {channel.currency} revenue
-                  </div>
+                  {channel.error ? (
+                    <div className="channel-error" title={channel.error}>
+                      <strong>Unavailable</strong>
+                      <span>{channel.error}</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="channel-orders">
+                        {channel.orderCount.toLocaleString("en-GB")}
+                        <small>orders</small>
+                      </div>
+                      <div className="channel-revenue">
+                        {money(channel.revenue, channel.currency)}
+                      </div>
+                      <div className="share">
+                        <div style={{ width: `${pct}%` }} />
+                      </div>
+                      <div className="share-label">
+                        {pct.toFixed(1)}% of {channel.currency} revenue
+                      </div>
+                    </>
+                  )}
                 </div>
               );
             })}

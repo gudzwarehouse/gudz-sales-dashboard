@@ -314,8 +314,39 @@ body {
 }
 
 .notice.error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
   background: var(--danger-soft);
   color: var(--danger);
+}
+
+.notice .retry {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.channel-error {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--danger);
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.channel-error strong {
+  font-size: 18px;
 }
 
 @media (max-width: 600px) {
