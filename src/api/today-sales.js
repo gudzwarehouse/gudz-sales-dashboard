@@ -43,9 +43,9 @@ async function getAccessToken() {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       grant_type: "refresh_token",
-      client_id: process.env.CA_UK_APPLICATION_ID,
-      client_secret: process.env.CA_UK_SHARED_SECRET,
-      refresh_token: process.env.CA_UK_REFRESH_TOKEN,
+      client_id: process.env.GATSBY_CA_UK_APPLICATION_ID,
+      client_secret: process.env.GATSBY_CA_UK_SHARED_SECRET,
+      refresh_token: process.env.GATSBY_CA_UK_REFRESH_TOKEN,
     }),
   });
   if (!response.ok) {
@@ -65,7 +65,7 @@ async function fetchAllOrders(token, filter, pageSize = 100) {
       $filter: filter,
       $top: String(pageSize),
       $skip: String(skip),
-      profileid: process.env.CA_UK_PROFILE_ID,
+      profileid: process.env.GATSBY_CA_UK_PROFILE_ID,
     }).toString();
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
@@ -84,12 +84,14 @@ async function fetchAllOrders(token, filter, pageSize = 100) {
 }
 
 export default async function handler(req, res) {
-  const missing = [
-    "CA_UK_APPLICATION_ID",
-    "CA_UK_SHARED_SECRET",
-    "CA_UK_REFRESH_TOKEN",
-    "CA_UK_PROFILE_ID",
-  ].filter((name) => !process.env[name]);
+  // Static process.env.X references so Gatsby's function bundler can inline them.
+  const creds = {
+    CA_UK_APPLICATION_ID: process.env.GATSBY_CA_UK_APPLICATION_ID,
+    CA_UK_SHARED_SECRET: process.env.GATSBY_CA_UK_SHARED_SECRET,
+    CA_UK_REFRESH_TOKEN: process.env.GATSBY_CA_UK_REFRESH_TOKEN,
+    CA_UK_PROFILE_ID: process.env.GATSBY_CA_UK_PROFILE_ID,
+  };
+  const missing = Object.keys(creds).filter((name) => !creds[name]);
   if (missing.length) {
     return res
       .status(500)
