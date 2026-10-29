@@ -1,0 +1,1236 @@
+{
+  "info": {
+    "name": "Mirakl Connect APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variables": [],
+  "item": [
+    {
+      "name": "Catalog",
+      "item": [
+        {
+          "name": "deleteProducts - Delete products in bulk from your Mirakl Connect Catalog",
+          "request": {
+            "method": "delete",
+            "url": {
+              "raw": "{{URL}}/products",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "products"
+              ],
+              "variable": null,
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "raw": "{\n    \"products\": [\n        {\n            \"id\": \"iphone12\"\n        }\n    ]\n}\n",
+              "mode": "raw"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "listProducts - List products from your Mirakl Connect catalog",
+          "request": {
+            "method": "get",
+            "url": {
+              "raw": "{{URL}}/products",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "products"
+              ],
+              "variable": null,
+              "query": [
+                {
+                  "key": "page_token",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "upsertProducts - Create or Update your Mirakl Connect Catalog",
+          "request": {
+            "method": "post",
+            "url": {
+              "raw": "{{URL}}/products",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "products"
+              ],
+              "variable": null,
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "raw": "{\n    \"products\": [\n        {\n            \"id\": \"iphone14pro\",\n            \"gtins\": [\n                {\n                    \"value\": \"0194252034279\"\n                }\n            ],\n            \"titles\": [\n                {\n                    \"value\": \"iPhone 14 pro\",\n                    \"locale\": \"en_US\"\n                }\n            ],\n            \"images\": [\n                {\n                    \"url\": \"https://picsum.photos/200\"\n                }\n            ],\n            \"standard_prices\": [\n                {\n                    \"scope\": \"PriceEUR_FR\",\n                    \"price\": {\n                        \"amount\": 1349,\n                        \"currency\": \"EUR\"\n                    }\n                },\n                {\n                    \"scope\": \"PriceEUR_BE\",\n                    \"price\": {\n                        \"amount\": 1249,\n                        \"currency\": \"EUR\"\n                    },\n                    \"start_date\": \"2025-01-01T10:00:00Z\",\n                    \"end_date\": \"2025-02-01T10:00:00Z\"\n                }\n            ],\n            \"discount_prices\": [\n                {\n                    \"scope\": \"PriceEUR_FR\",\n                    \"price\": {\n                        \"amount\": 1249.99,\n                        \"currency\": \"EUR\"\n                    },\n                    \"start_date\": \"2025-01-01T10:00:00Z\",\n                    \"end_date\": \"2025-02-01T10:00:00Z\"\n                },\n                {\n                    \"scope\": \"PriceEUR_BE\",\n                    \"price\": {\n                        \"amount\": 1149.99,\n                        \"currency\": \"EUR\"\n                    },\n                    \"start_date\": \"2025-01-01T14:00:00Z\",\n                    \"end_date\": \"2025-05-01T14:00:00Z\"\n                }\n            ],\n            \"quantities\": [\n                {\n                    \"available_quantity\": 65\n                }\n            ],\n            \"brand\": \"APPLE\",\n            \"descriptions\": [\n                {\n                    \"value\": \"Smartphone Apple iPhone 14 Pro 128GB Intense Purple\",\n                    \"locale\": \"en_US\"\n                }\n            ],\n            \"category\": {\n                \"id\": \"Smartphone\",\n                \"labels\": [\n                    {\n                        \"value\": \"Smartphone\",\n                        \"locale\": \"en_US\"\n                    }\n                ]\n            },\n            \"attributes\": [\n                {\n                    \"type\": \"STRING\",\n                    \"id\": \"color\",\n                    \"name\": \"color\",\n                    \"value\": \"Intense Purple\"\n                },\n                {\n                    \"type\": \"NUMERIC\",\n                    \"id\": \"storage\",\n                    \"name\": \"storage\",\n                    \"value\": 256\n                },\n                {\n                    \"type\": \"BOOLEAN\",\n                    \"id\": \"limitedEdition\",\n                    \"name\": \"limited edition\",\n                    \"value\": true\n                }\n            ]\n        }\n    ]\n}\n",
+              "mode": "raw"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Conversations",
+      "item": [
+        {
+          "name": "createConversation - Create a new conversation",
+          "request": {
+            "method": "post",
+            "url": {
+              "raw": "{{URL}}/conversations",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "conversations"
+              ],
+              "variable": null,
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "formdata": [
+                {
+                  "key": "conversation",
+                  "type": "text",
+                  "contentType": null,
+                  "value": null,
+                  "description": null
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "contentType": null,
+                  "value": null,
+                  "description": null
+                }
+              ],
+              "mode": "formdata"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "createMessage - Create a message in a conversation",
+          "request": {
+            "method": "post",
+            "url": {
+              "raw": "{{URL}}/conversations/:conversationId/messages",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "conversations",
+                ":conversationId",
+                "messages"
+              ],
+              "variable": [
+                {
+                  "key": ":conversationId",
+                  "value": "value"
+                }
+              ],
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "formdata": [
+                {
+                  "key": "message_input",
+                  "type": "text",
+                  "contentType": null,
+                  "value": null,
+                  "description": null
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "contentType": null,
+                  "value": null,
+                  "description": null
+                }
+              ],
+              "mode": "formdata"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "downloadConversationAttachments - Download attachments of a conversation",
+          "request": {
+            "method": "get",
+            "url": {
+              "raw": "{{URL}}/conversations/:conversationId/attachments",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "conversations",
+                ":conversationId",
+                "attachments"
+              ],
+              "variable": [
+                {
+                  "key": ":conversationId",
+                  "value": "value"
+                }
+              ],
+              "query": [
+                {
+                  "key": "attachment_ids",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/zip"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "getConversationActionStatus - Get action status",
+          "request": {
+            "method": "get",
+            "url": {
+              "raw": "{{URL}}/conversations/actions/:actionId",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "conversations",
+                "actions",
+                ":actionId"
+              ],
+              "variable": [
+                {
+                  "key": ":actionId",
+                  "value": "value"
+                }
+              ],
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "getConversationMessages - Get messages for a conversation",
+          "request": {
+            "method": "get",
+            "url": {
+              "raw": "{{URL}}/conversations/:conversationId",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "conversations",
+                ":conversationId"
+              ],
+              "variable": [
+                {
+                  "key": ":conversationId",
+                  "value": "value"
+                }
+              ],
+              "query": [
+                {
+                  "key": "message_after",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "listConversations - List all order conversations",
+          "request": {
+            "method": "get",
+            "url": {
+              "raw": "{{URL}}/conversations",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "conversations"
+              ],
+              "variable": null,
+              "query": [
+                {
+                  "key": "page_token",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "updated_from",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "entity_type",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "entity_ids",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "conversation_ids",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "acceptOrderLines - Accept or refuse order lines",
+          "request": {
+            "method": "put",
+            "url": {
+              "raw": "{{URL}}/orders/:order_id/accept",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "orders",
+                ":order_id",
+                "accept"
+              ],
+              "variable": [
+                {
+                  "key": ":order_id",
+                  "value": "value"
+                }
+              ],
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "raw": "{\n  \"order_lines\": [\n    {\n      \"id\": \"01JYGX3F6A2P8QW4KZRD9TBEH5\",\n      \"accepted\": true\n    },\n    {\n      \"id\": \"01JYGX3T7C1N5RV8MYSEA2KDQ6\",\n      \"accepted\": false\n    }\n  ]\n}\n",
+              "mode": "raw"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "listOrders - List Mirakl Connect orders",
+          "request": {
+            "method": "get",
+            "url": {
+              "raw": "{{URL}}/orders",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "orders"
+              ],
+              "variable": null,
+              "query": [
+                {
+                  "key": "order_ids",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "statuses",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "updated_from",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "fulfillment_type",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "page_token",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "v2-acceptOrderLines - Accept or refuse order lines",
+          "request": {
+            "method": "put",
+            "url": {
+              "raw": "{{URL}}/v2/orders/:order_id/accept",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders",
+                ":order_id",
+                "accept"
+              ],
+              "variable": [
+                {
+                  "key": ":order_id",
+                  "value": "value"
+                }
+              ],
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "raw": "{\n  \"order_lines\": [\n    {\n      \"id\": \"01JYGX3F6A2P8QW4KZRD9TBEH5\",\n      \"accepted\": true\n    },\n    {\n      \"id\": \"01JYGX3T7C1N5RV8MYSEA2KDQ6\",\n      \"accepted\": false\n    }\n  ]\n}\n",
+              "mode": "raw"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "v2-cancelOrderLines - Cancel order lines",
+          "request": {
+            "method": "post",
+            "url": {
+              "raw": "{{URL}}/v2/orders/:order_id/cancel",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders",
+                ":order_id",
+                "cancel"
+              ],
+              "variable": [
+                {
+                  "key": ":order_id",
+                  "value": "value"
+                }
+              ],
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "raw": "{\n  \"cancelations\": [\n    {\n      \"reason\": \"CUSTOMER_CANCELATION\",\n      \"order_line_id\": \"01JYGX3F6A2P8QW4KZRD9TBEH5\",\n      \"product_id\": \"10000\",\n      \"quantity\": 1,\n      \"price\": {\n        \"amount\": 15.0,\n        \"currency\": \"USD\"\n      },\n      \"taxes\": [\n        {\n          \"code\": \"Tax1\",\n          \"amount\": {\n            \"amount\": 1.0,\n            \"currency\": \"USD\"\n          }\n        },\n        {\n          \"code\": \"Tax2\",\n          \"amount\": {\n            \"amount\": 2.0,\n            \"currency\": \"USD\"\n          }\n        }\n      ],\n      \"shipping_price\": {\n        \"amount\": 8.0,\n        \"currency\": \"USD\"\n      },\n      \"shipping_taxes\": [\n        {\n          \"code\": \"ShippingTax1\",\n          \"amount\": {\n            \"amount\": 3.0,\n            \"currency\": \"USD\"\n          }\n        },\n        {\n          \"code\": \"ShippingTax2\",\n          \"amount\": {\n            \"amount\": 4.0,\n            \"currency\": \"USD\"\n          }\n        }\n      ]\n    }\n  ]\n}\n",
+              "mode": "raw"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "v2-downloadOrderDocuments - Download documents from an order",
+          "request": {
+            "method": "get",
+            "url": {
+              "raw": "{{URL}}/v2/orders/:order_id/documents",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders",
+                ":order_id",
+                "documents"
+              ],
+              "variable": [
+                {
+                  "key": ":order_id",
+                  "value": "value"
+                }
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "document_ids",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/zip"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "v2-getActionStatus - Track an asynchronous action request",
+          "request": {
+            "method": "get",
+            "url": {
+              "raw": "{{URL}}/v2/orders/actions/:action_id",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders",
+                "actions",
+                ":action_id"
+              ],
+              "variable": [
+                {
+                  "key": ":action_id",
+                  "value": "value"
+                }
+              ],
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "v2-getOrderTracking - Retrieve tracking information",
+          "request": {
+            "method": "get",
+            "url": {
+              "raw": "{{URL}}/v2/orders/tracking/:tracking_id",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders",
+                "tracking",
+                ":tracking_id"
+              ],
+              "variable": [
+                {
+                  "key": ":tracking_id",
+                  "value": "value"
+                }
+              ],
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "v2-listOrderDocuments - List documents",
+          "request": {
+            "method": "get",
+            "url": {
+              "raw": "{{URL}}/v2/orders/documents",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders",
+                "documents"
+              ],
+              "variable": null,
+              "query": [
+                {
+                  "key": "order_ids",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "types",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "channel_types",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "updated_from",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "page_token",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "v2-listOrders - List Mirakl Connect orders",
+          "request": {
+            "method": "get",
+            "url": {
+              "raw": "{{URL}}/v2/orders",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders"
+              ],
+              "variable": null,
+              "query": [
+                {
+                  "key": "order_ids",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "statuses",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "updated_from",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "fulfillment_type",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "page_token",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "v2-refundOrderLines - Refund order lines",
+          "request": {
+            "method": "post",
+            "url": {
+              "raw": "{{URL}}/v2/orders/:order_id/refund",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders",
+                ":order_id",
+                "refund"
+              ],
+              "variable": [
+                {
+                  "key": ":order_id",
+                  "value": "value"
+                }
+              ],
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "raw": "{\n  \"refunds\": [\n    {\n      \"reason\": \"ITEM_NOT_RECEIVED\",\n      \"order_line_id\": \"01JYGX3F6A2P8QW4KZRD9TBEH5\",\n      \"product_id\": \"10000\",\n      \"quantity\": 1,\n      \"price\": {\n        \"amount\": 15.0,\n        \"currency\": \"USD\"\n      },\n      \"taxes\": [\n        {\n          \"code\": \"Tax1\",\n          \"amount\": {\n            \"amount\": 1.0,\n            \"currency\": \"USD\"\n          }\n        },\n        {\n          \"code\": \"Tax2\",\n          \"amount\": {\n            \"amount\": 2.0,\n            \"currency\": \"USD\"\n          }\n        }\n      ],\n      \"shipping_price\": {\n        \"amount\": 8.0,\n        \"currency\": \"USD\"\n      },\n      \"shipping_taxes\": [\n        {\n          \"code\": \"ShippingTax1\",\n          \"amount\": {\n            \"amount\": 3.0,\n            \"currency\": \"USD\"\n          }\n        },\n        {\n          \"code\": \"ShippingTax2\",\n          \"amount\": {\n            \"amount\": 4.0,\n            \"currency\": \"USD\"\n          }\n        }\n      ]\n    }\n  ]\n}\n",
+              "mode": "raw"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "v2-reportOrderActions - Log order action results and errors",
+          "request": {
+            "method": "post",
+            "url": {
+              "raw": "{{URL}}/v2/orders/actions",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders",
+                "actions"
+              ],
+              "variable": null,
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "raw": "{\n  \"actions\": [\n    {\n      \"type\": \"SYNCHRONIZE_ORDER\",\n      \"status\": \"SUCCESS\",\n      \"entity_id\": \"01JYGX7R3H8K5NW9QZTVD4MBE2\",\n      \"entity_type\": \"ORDER\",\n      \"executed_at\": \"2023-05-15T14:32:17Z\"\n    }\n  ]\n}\n",
+              "mode": "raw"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "v2-uploadOrderDocument - Upload a document for an order",
+          "request": {
+            "method": "post",
+            "url": {
+              "raw": "{{URL}}/v2/orders/:order_id/documents",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders",
+                ":order_id",
+                "documents"
+              ],
+              "variable": [
+                {
+                  "key": ":order_id",
+                  "value": "value"
+                }
+              ],
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "contentType": null,
+                  "value": null,
+                  "description": null
+                },
+                {
+                  "key": "metadata",
+                  "type": "text",
+                  "contentType": null,
+                  "value": null,
+                  "description": null
+                }
+              ],
+              "mode": "formdata"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Returns",
+      "item": [
+        {
+          "name": "v2-acceptReturn - Accept or refuse return",
+          "request": {
+            "method": "put",
+            "url": {
+              "raw": "{{URL}}/v2/orders/returns/:return_id/accept",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders",
+                "returns",
+                ":return_id",
+                "accept"
+              ],
+              "variable": [
+                {
+                  "key": ":return_id",
+                  "value": "value"
+                }
+              ],
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "raw": "{\n  \"accepted\": true\n}\n",
+              "mode": "raw"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "v2-acknowledgeReturnReception - Mark return as received",
+          "request": {
+            "method": "put",
+            "url": {
+              "raw": "{{URL}}/v2/orders/returns/:return_id/receive",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders",
+                "returns",
+                ":return_id",
+                "receive"
+              ],
+              "variable": [
+                {
+                  "key": ":return_id",
+                  "value": "value"
+                }
+              ],
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "v2-closeReturn - Mark return as closed",
+          "request": {
+            "method": "put",
+            "url": {
+              "raw": "{{URL}}/v2/orders/returns/:return_id/close",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders",
+                "returns",
+                ":return_id",
+                "close"
+              ],
+              "variable": [
+                {
+                  "key": ":return_id",
+                  "value": "value"
+                }
+              ],
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "v2-listReturns - List Mirakl Connect returns",
+          "request": {
+            "method": "get",
+            "url": {
+              "raw": "{{URL}}/v2/orders/returns",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders",
+                "returns"
+              ],
+              "variable": null,
+              "query": [
+                {
+                  "key": "order_ids",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "statuses",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "updated_from",
+                  "value": "",
+                  "disabled": false
+                },
+                {
+                  "key": "page_token",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "v2-updateReturnTrackingInformation - Update return tracking information",
+          "request": {
+            "method": "put",
+            "url": {
+              "raw": "{{URL}}/v2/orders/returns/:return_id/trackings",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders",
+                "returns",
+                ":return_id",
+                "trackings"
+              ],
+              "variable": [
+                {
+                  "key": ":return_id",
+                  "value": "value"
+                }
+              ],
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "raw": "{\n  \"label_url\": \"https://shipping.ups.com/returns/labels/d290f1ee-6c54-4b01-90e6-d701748f0851.pdf\",\n  \"rma_id\": \"CR117B72FEF5E8391187\",\n  \"tracking\": {\n    \"tracking_number\": \"791823193211\",\n    \"carrier\": \"FedEx\",\n    \"tracking_url\": \"https://www.fedex.com/fedextrack/?trknbr=791823193211\"\n  }\n}\n",
+              "mode": "raw"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Shipments",
+      "item": [
+        {
+          "name": "createShipment - Ship items of a Connect order",
+          "request": {
+            "method": "post",
+            "url": {
+              "raw": "{{URL}}/orders/:order_id/shipments",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "orders",
+                ":order_id",
+                "shipments"
+              ],
+              "variable": [
+                {
+                  "key": ":order_id",
+                  "value": "value"
+                }
+              ],
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "raw": "{\n  \"items\": [\n    {\n      \"id\": \"10000\",\n      \"quantity\": 3\n    }\n  ],\n  \"carrier\": \"Custom carrier\",\n  \"tracking_number\": \"123456\",\n  \"tracking_url\": \"http://www.customcarrier.com/tracking\"\n}\n",
+              "mode": "raw"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "v2-createShipment - Ship items of a Connect order",
+          "request": {
+            "method": "post",
+            "url": {
+              "raw": "{{URL}}/v2/orders/:order_id/shipments",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "",
+                "v2",
+                "orders",
+                ":order_id",
+                "shipments"
+              ],
+              "variable": [
+                {
+                  "key": ":order_id",
+                  "value": "value"
+                }
+              ],
+              "query": null
+            },
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "raw": "{\n  \"items\": [\n    {\n      \"id\": \"10000\",\n      \"quantity\": 3\n    }\n  ],\n  \"carrier\": \"Custom carrier\",\n  \"tracking_number\": \"123456\",\n  \"tracking_url\": \"http://www.customcarrier.com/tracking\",\n  \"warehouse_id\": \"WH-001\"\n}\n",
+              "mode": "raw"
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "",
+        "type": "string"
+      }
+    ],
+    "apikey": null
+  }
+}
