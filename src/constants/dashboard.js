@@ -2,6 +2,7 @@ export const RANGES = {
   today: { title: "Today's Sales", button: "Today" },
   yesterday: { title: "Yesterday's Sales", button: "Yesterday" },
   last30: { title: "Last 30 Days' Sales", button: "Last 30 days" },
+  date: { title: "Sales for Selected Date", button: "Pick a date" },
   custom: { title: "Sales for Custom Range", button: "Custom range" },
 };
 

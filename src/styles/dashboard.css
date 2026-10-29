@@ -133,7 +133,8 @@ body {
   box-shadow: var(--shadow);
 }
 
-.range-form span {
+.range-form span,
+.range-form label {
   color: var(--muted);
   font-size: 14px;
 }
