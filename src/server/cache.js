@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-export const CACHE_MIN_AGE_DAYS = 2;
+export const CACHE_MIN_AGE_DAYS = 1;
 
 const CACHE_FILE = path.join(process.cwd(), ".sales-cache", "days.json");
 
