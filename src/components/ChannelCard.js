@@ -1,4 +1,5 @@
 import * as React from "react";
+import ChannelLogo from "./ChannelLogo";
 import { CHANNEL_COLORS } from "../constants/dashboard";
 import { count, money } from "../utils/format";
 
@@ -29,7 +30,7 @@ const ChannelCard = ({ channel, currencyTotal }) => (
     style={{ "--channel": CHANNEL_COLORS[channel.key] }}
   >
     <div className="channel-name">
-      <span className="dot" />
+      <ChannelLogo channelKey={channel.key} label={channel.label} />
       {channel.label}
     </div>
     {channel.error ? (
