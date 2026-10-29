@@ -375,3 +375,76 @@ body {
     font-size: 22px;
   }
 }
+
+.pie-toggle {
+  box-shadow: none;
+}
+
+.pie-body {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.pie-svg {
+  width: 220px;
+  height: 220px;
+  flex-shrink: 0;
+}
+
+.pie-svg path {
+  transition: opacity 0.15s;
+}
+
+.pie-big {
+  fill: var(--text);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.pie-small {
+  fill: var(--muted);
+  font-size: 10px;
+}
+
+.pie-legend {
+  flex: 1;
+  min-width: 260px;
+  max-width: 460px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pie-legend li {
+  display: grid;
+  grid-template-columns: 12px 1fr auto 56px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.pie-legend li.on {
+  background: var(--accent-soft);
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.pie-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.pie-share {
+  color: var(--muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,5 +1,6 @@
 import * as React from "react";
 import ChannelGrid from "./ChannelGrid";
+import ChannelPie from "./ChannelPie";
 import KpiCards from "./KpiCards";
 import Notice from "./Notice";
 import SectionHead from "./SectionHead";
@@ -22,6 +23,8 @@ const SalesReport = ({ channels, onRetry }) => {
       />
       <SectionHead title="By channel" />
       <ChannelGrid channels={channels} revenueByCurrency={revenueByCurrency} />
+      <SectionHead title="Share by channel" />
+      <ChannelPie channels={channels} />
     </>
   );
 };
