@@ -1,14 +1,15 @@
 import {
   ALL_CHANNELS,
   CHANNELS,
-  LOCAL_CHANNELS,
+  HELM_CHANNEL,
+  HELM_IGNORED_STATUS,
   MIRAKL_CHANNELS,
   MIRAKL_IGNORED_STATES,
 } from "./channels";
 import { fetchChannelAdvisorOrders } from "./channelAdvisor";
 import { isEntry } from "./cache";
 import { addDays, eachDay, londonDayOf, londonDayStartUtc } from "./dates";
-import { readHollandBarrettDays } from "./hollandBarrett";
+import { fetchHelmOrders } from "./helm";
 import { fetchMiraklOrders } from "./mirakl";
 
 const CA_ENV_FIELDS = {
@@ -21,7 +22,7 @@ const CA_ENV_FIELDS = {
 const missingMessage = (names) =>
   `Missing environment variables: ${names.join(", ")}`;
 
-export function findConfigErrors(accounts, mirakl) {
+export function findConfigErrors(accounts, mirakl, helm) {
   const errors = {};
 
   for (const [account, creds] of Object.entries(accounts)) {
@@ -43,6 +44,13 @@ export function findConfigErrors(accounts, mirakl) {
     ].filter(Boolean);
     if (names.length) errors[channel.key] = missingMessage(names);
   }
+
+  const helmNames = [
+    !helm.baseUrl && "GATSBY_HELM_BASE_URL",
+    !helm.email && "GATSBY_HELM_EMAIL",
+    !helm.password && "GATSBY_HELM_PASSWORD",
+  ].filter(Boolean);
+  if (helmNames.length) errors[HELM_CHANNEL.key] = missingMessage(helmNames);
 
   return errors;
 }
@@ -102,9 +110,21 @@ async function loadMirakl({ channel, creds, since, until, record }) {
   }
 }
 
+async function loadHelm({ creds, from, to, record }) {
+  const orders = await fetchHelmOrders(creds, from, addDays(to, 1));
+  for (const order of orders) {
+    if (HELM_IGNORED_STATUS.test(order.status || "")) continue;
+    record(
+      HELM_CHANNEL.key,
+      order.date_received.slice(0, 10),
+      order.total_paid,
+    );
+  }
+}
+
 // Returns { days, errors }. `errors` maps a channel key to why it could not be
 // read; those channels have no entries in `days`.
-export async function fetchDays(from, to, { accounts, mirakl, keys }) {
+export async function fetchDays(from, to, { accounts, mirakl, helm, keys }) {
   const since = londonDayStartUtc(from);
   const until = londonDayStartUtc(addDays(to, 1));
   const days = emptyDays(from, to, keys);
@@ -131,14 +151,11 @@ export async function fetchDays(from, to, { accounts, mirakl, keys }) {
   ];
 
   await Promise.all([
-    ...(keys.has("holland_barrett")
+    ...(keys.has(HELM_CHANNEL.key)
       ? [
-          guard(["holland_barrett"], async () => {
-            const saved = readHollandBarrettDays(eachDay(from, to));
-            for (const [day, entry] of Object.entries(saved)) {
-              days[day].holland_barrett = { ...entry };
-            }
-          }),
+          guard([HELM_CHANNEL.key], () =>
+            loadHelm({ creds: helm, from, to, record }),
+          ),
         ]
       : []),
     ...accountNames.map((account) =>

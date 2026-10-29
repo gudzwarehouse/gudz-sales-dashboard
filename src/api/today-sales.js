@@ -1,4 +1,4 @@
-import { ALL_CHANNELS, LOCAL_CHANNELS } from "../server/channels";
+import { ALL_CHANNELS } from "../server/channels";
 import {
   CACHE_MIN_AGE_DAYS,
   isEntry,
@@ -31,6 +31,11 @@ function readCredentials() {
         profileId: process.env.GATSBY_CA_IRE_PROFILE_ID,
       },
     },
+    helm: {
+      baseUrl: process.env.GATSBY_HELM_BASE_URL,
+      email: process.env.GATSBY_HELM_EMAIL,
+      password: process.env.GATSBY_HELM_PASSWORD,
+    },
     mirakl: {
       tesco: {
         apiKey: process.env.GATSBY_MIRAKL_TESCO_API_KEY,
@@ -43,8 +48,6 @@ function readCredentials() {
     },
   };
 }
-
-const isLocal = (key) => LOCAL_CHANNELS.some((c) => c.key === key);
 
 function findNeededDays({ wanted, cache, cacheableUpTo, refresh }) {
   const needed = {};
@@ -64,8 +67,8 @@ export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
   try {
-    const { accounts, mirakl } = readCredentials();
-    const errors = findConfigErrors(accounts, mirakl);
+    const { accounts, helm, mirakl } = readCredentials();
+    const errors = findConfigErrors(accounts, mirakl, helm);
 
     const query = req.query || {};
     const today = londonToday();
@@ -94,7 +97,7 @@ export default async function handler(req, res) {
       const fetched = await fetchDays(
         neededDays[0],
         neededDays[neededDays.length - 1],
-        { accounts, mirakl, keys },
+        { accounts, helm, mirakl, keys },
       );
       Object.assign(errors, fetched.errors);
 
@@ -103,7 +106,7 @@ export default async function handler(req, res) {
         if (errors[key]) continue;
         for (const [day, entries] of Object.entries(fetched.days)) {
           (fresh[day] ||= {})[key] = entries[key];
-          if (day <= cacheableUpTo && !isLocal(key)) {
+          if (day <= cacheableUpTo) {
             cache[day] = { ...cache[day], [key]: entries[key] };
             cacheChanged = true;
           }

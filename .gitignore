@@ -9,6 +9,3 @@ public
 
 # Per-day sales cache
 .sales-cache/
-
-# Saved H&B portal login
-support/secrets/
