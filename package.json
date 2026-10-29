@@ -1,0 +1,29 @@
+{
+    "name": "gudz-sales-dashboard",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Gudz sales dashboard",
+    "author": "Laurie Barth",
+    "keywords": [
+        "gatsby"
+    ],
+    "scripts": {
+        "develop": "gatsby develop",
+        "start": "gatsby develop",
+        "build": "gatsby build",
+        "serve": "gatsby serve",
+        "clean": "gatsby clean"
+    },
+    "license": "0BSD",
+    "dependencies": {
+        "gatsby": "^5.14.6",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+    },
+    "overrides": {
+        "sharp": "^0.34.0"
+    },
+    "devDependencies": {
+        "node": "^22.23.4"
+    }
+}
