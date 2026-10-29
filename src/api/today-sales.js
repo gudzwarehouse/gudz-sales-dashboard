@@ -5,7 +5,7 @@
 //
 // To keep API usage low:
 //  - ChannelAdvisor is queried once per account (not once per channel) and only
-//    for the three fields needed ($select), 200 orders per page.
+//    for the three fields needed ($select).
 //  - Pages after the first are fetched in parallel using the total count.
 //  - Per-day totals for finished days are cached (memory + .sales-cache/), so a
 //    range only asks the APIs for days it has not seen before.
@@ -56,7 +56,7 @@ const MIRAKL_CHANNELS = [
 const MIRAKL_IGNORED_STATES = ["CANCELED", "REFUSED"];
 
 const ALL_CHANNELS = [...CHANNELS, ...MIRAKL_CHANNELS];
-const CA_PAGE_SIZE = 200;
+const CA_PAGE_SIZE = 100;
 const MIRAKL_PAGE_SIZE = 100;
 const PAGE_CONCURRENCY = 5;
 
@@ -136,14 +136,16 @@ async function getAccessToken(creds) {
 async function fetchCaOrders(token, profileId, filter) {
   return fetchPaged(async (skip) => {
     const url = new URL(ORDERS_URL);
-    url.search = new URLSearchParams({
+    const params = {
       $filter: filter,
       $select: "SiteName,TotalPrice,CheckoutDateUtc",
-      $count: "true",
       $top: String(CA_PAGE_SIZE),
       $skip: String(skip),
       profileid: profileId,
-    }).toString();
+    };
+    // Counting slows a request, so only the first page asks for it.
+    if (skip === 0) params.$count = "true";
+    url.search = new URLSearchParams(params).toString();
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
     });
