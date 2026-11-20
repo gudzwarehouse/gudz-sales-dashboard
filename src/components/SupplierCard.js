@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ChannelBest } from "./BestSellers";
 import { ChannelParts } from "./ChannelCard";
-import ChannelLogo from "./ChannelLogo";
+import SupplierLogo from "./SupplierLogo";
 import Notice from "./Notice";
 import SkeletonGrid from "./SkeletonGrid";
 import { CHANNEL_LABELS, supplierColor } from "../constants/dashboard";
@@ -38,7 +38,7 @@ const SupplierCard = ({ supplier, gbpTotal, days, status, onSelect }) => {
       aria-label={`${supplier.name}: view detailed sales`}
     >
       <div className="channel-name">
-        <ChannelLogo label={supplier.name} />
+        <SupplierLogo supplierKey={supplier.key} name={supplier.name} />
         {supplier.name}
       </div>
       <div className="channel-orders">

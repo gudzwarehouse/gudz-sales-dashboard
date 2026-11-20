@@ -3,7 +3,7 @@ import { Link } from "gatsby";
 import "../styles/dashboard.css";
 import logo from "../images/gudz-logo.webp";
 import { BestKpi, bestLines } from "../components/BestSellers";
-import ChannelLogo from "../components/ChannelLogo";
+import SupplierLogo from "../components/SupplierLogo";
 import Notice from "../components/Notice";
 import SectionHead from "../components/SectionHead";
 import Stat from "../components/Stat";
@@ -92,7 +92,7 @@ const SupplierPage = ({ location }) => {
       ) : (
         <>
           <header className="channel-header">
-            <ChannelLogo label={name || "?"} />
+            <SupplierLogo supplierKey={key} name={name || "?"} />
             <div>
               <h1>{name}</h1>
               <p className="dash-sub">

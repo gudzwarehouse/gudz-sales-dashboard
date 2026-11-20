@@ -302,6 +302,18 @@ body {
   object-fit: contain;
 }
 
+.supplier-logo {
+  width: auto;
+  min-width: 32px;
+  padding: 4px 8px;
+}
+
+.supplier-logo img {
+  height: 24px;
+  width: auto;
+  max-width: 96px;
+}
+
 .channel-logo b {
   color: var(--channel, var(--accent));
   font-size: 15px;
@@ -777,6 +789,17 @@ body {
 .channel-header .channel-logo img {
   width: 36px;
   height: 36px;
+}
+
+.channel-header .supplier-logo {
+  width: auto;
+  padding: 8px 14px;
+}
+
+.channel-header .supplier-logo img {
+  width: auto;
+  height: 40px;
+  max-width: 200px;
 }
 
 .channel-best-kpis {
