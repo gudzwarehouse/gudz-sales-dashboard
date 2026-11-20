@@ -47,7 +47,7 @@ const Overview = ({ supplier, suppliers, days }) => {
           ))}
         <Stat label="Units sold" value={count(supplier.units)} />
       </div>
-      <div className="kpis">
+      <div className="kpis kpis-fill">
         {supplier.channels.map((channel) => (
           <Stat
             key={channel.key}

@@ -48,10 +48,9 @@ const Overview = ({ tile, days, currencyTotal }) => {
             sub={`${count(part.orderCount)} orders`}
           />
         ))}
-      </div>
-      {tile.levels && (
-        <div className="kpis">
-          {Object.entries(SERVICE_LEVEL_LABELS).map(([level, text]) => {
+        {/* Prime and Premium sit in the same grid, laid out like FBM / FBA. */}
+        {tile.levels &&
+          Object.entries(SERVICE_LEVEL_LABELS).map(([level, text]) => {
             const figures = tile.levels[level];
             const orderShare = tile.orderCount
               ? (figures.count / tile.orderCount) * 100
@@ -59,17 +58,15 @@ const Overview = ({ tile, days, currencyTotal }) => {
             return (
               <Stat
                 key={level}
-                label={`${text.label} orders (${text.detail})`}
-                value={count(figures.count)}
-                sub={`${orderShare.toFixed(1)}% of orders · ${money(
-                  figures.revenue,
-                  tile.currency,
-                )}`}
+                label={`${text.label} (${text.detail})`}
+                value={money(figures.revenue, tile.currency)}
+                sub={`${count(figures.count)} orders · ${orderShare.toFixed(
+                  1,
+                )}% of orders`}
               />
             );
           })}
-        </div>
-      )}
+      </div>
     </>
   );
 };

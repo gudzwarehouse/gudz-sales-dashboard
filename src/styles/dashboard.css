@@ -217,6 +217,17 @@ body {
   gap: 16px;
 }
 
+/* A grid's gap only spaces its own cards, so stacked grids need this. */
+.kpis + .kpis {
+  margin-top: 16px;
+}
+
+/* Keeps empty columns, so a short row of cards stays the width of the row
+   above instead of stretching. */
+.kpis-fill {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
