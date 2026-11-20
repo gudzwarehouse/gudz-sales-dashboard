@@ -146,3 +146,20 @@ export const HELM_IGNORED_STATUS = /cancel/i;
 export const MIRAKL_IGNORED_STATES = ["CANCELED", "REFUSED"];
 
 export const ALL_CHANNELS = [...CHANNELS, ...MIRAKL_CHANNELS, HELM_CHANNEL];
+
+// The keys the dashboard tiles use: Amazon UK's FBM and FBA share one, as do
+// Shopify's retail and wholesale.
+export const TILE_KEYS = [
+  ...new Set(ALL_CHANNELS.map((c) => c.group || c.key)),
+];
+
+// What a tile is called, e.g. "Shopify" for the three Shopify parts.
+export const tileLabel = (key) => {
+  const channel = ALL_CHANNELS.find((c) => (c.group || c.key) === key);
+  if (!channel) return key;
+  return (
+    channel.groupName ||
+    ALL_CHANNELS.find((c) => c.key === key)?.label ||
+    channel.label
+  );
+};

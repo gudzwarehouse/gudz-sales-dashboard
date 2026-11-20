@@ -1,17 +1,8 @@
-import { CHANNELS, HELM_CHANNEL, MIRAKL_CHANNELS } from "../server/channels";
+import { TILE_KEYS } from "../server/channels";
 import { CACHE_MIN_AGE_DAYS } from "../server/cache";
 import { readCredentials } from "../server/credentials";
 import { addDays, londonToday, resolveRange } from "../server/dates";
 import { buildBestSellers } from "../server/supplierSales";
-
-// The keys the dashboard tiles use: Amazon UK's FBM and FBA share one, as do Shopify's retail and wholesale.
-const CHANNEL_KEYS = [
-  ...new Set(
-    [...CHANNELS, ...MIRAKL_CHANNELS, HELM_CHANNEL].map(
-      (c) => c.group || c.key,
-    ),
-  ),
-];
 
 export default async function handler(req, res) {
   if (req.method && req.method !== "GET") {
@@ -27,7 +18,7 @@ export default async function handler(req, res) {
     const { from, to } = range;
 
     const best = await buildBestSellers(
-      CHANNEL_KEYS,
+      TILE_KEYS,
       readCredentials(),
       { from, to },
       addDays(today, -CACHE_MIN_AGE_DAYS),

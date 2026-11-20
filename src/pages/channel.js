@@ -7,38 +7,15 @@ import { SERVICE_LEVEL_LABELS } from "../components/ChannelCard";
 import ChannelLogo from "../components/ChannelLogo";
 import Notice from "../components/Notice";
 import SectionHead from "../components/SectionHead";
+import Stat from "../components/Stat";
 import SupplierPanel from "../components/SupplierPanel";
-import { CHANNEL_COLORS, CHANNEL_LABELS, RANGES } from "../constants/dashboard";
+import { CHANNEL_COLORS, CHANNEL_LABELS } from "../constants/dashboard";
 import { useBestSellers } from "../hooks/useBestSellers";
 import { useSales } from "../hooks/useSales";
 import { eachDay } from "../server/dates";
 import { count, money } from "../utils/format";
+import { readPageLocation } from "../utils/location";
 import { summarize } from "../utils/sales";
-
-// The address carries the channel and the same date query the dashboard used:
-// /channel/?channel=amazon_uk&range=last30 or &from=2026-01-01&to=2026-01-31.
-function readLocation(search) {
-  const params = new URLSearchParams(search);
-  const key = params.get("channel");
-  params.delete("channel");
-  const query = params.toString() || null;
-  const range = params.get("range");
-  const title = range
-    ? RANGES[range]?.button
-    : params.get("from") &&
-      (params.get("from") === params.get("to")
-        ? params.get("from")
-        : `${params.get("from")} to ${params.get("to")}`);
-  return { key, query, title };
-}
-
-const Stat = ({ label, value, sub }) => (
-  <div className="card">
-    <div className="kpi-label">{label}</div>
-    <div className="kpi-value">{value}</div>
-    {sub && <div className="kpi-sub">{sub}</div>}
-  </div>
-);
 
 const Overview = ({ tile, days, currencyTotal }) => {
   const share = currencyTotal ? (tile.revenue / currencyTotal) * 100 : 0;
@@ -98,7 +75,10 @@ const Overview = ({ tile, days, currencyTotal }) => {
 };
 
 const ChannelPage = ({ location }) => {
-  const { key, query, title } = readLocation(location?.search || "");
+  const { key, query, title } = readPageLocation(
+    location?.search || "",
+    "channel",
+  );
   const label = CHANNEL_LABELS[key];
   const channel = React.useMemo(() => ({ key, label }), [key, label]);
   const valid = Boolean(label && query);

@@ -5,6 +5,7 @@ import ChannelPie from "./ChannelPie";
 import KpiCards from "./KpiCards";
 import Notice from "./Notice";
 import SectionHead from "./SectionHead";
+import { SupplierGrid } from "./SupplierCard";
 import { useBestSellers } from "../hooks/useBestSellers";
 import { summarize } from "../utils/sales";
 
@@ -13,6 +14,13 @@ const SalesReport = ({ channels, days, query, onRetry }) => {
   const best = useBestSellers(query);
   const open = React.useCallback(
     (channel) => navigate(`/channel/?channel=${channel.key}&${query}`),
+    [query],
+  );
+  const openSupplier = React.useCallback(
+    (supplier) =>
+      navigate(
+        `/supplier/?supplier=${encodeURIComponent(supplier.key)}&${query}`,
+      ),
     [query],
   );
   return (
@@ -37,6 +45,8 @@ const SalesReport = ({ channels, days, query, onRetry }) => {
         best={best}
         onSelect={open}
       />
+      <SectionHead title="By supplier" />
+      <SupplierGrid best={best} days={days} onSelect={openSupplier} />
       <SectionHead title="Share by channel" />
       <ChannelPie channels={channels} />
     </>

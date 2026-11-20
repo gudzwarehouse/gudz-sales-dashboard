@@ -34,7 +34,7 @@ const ChannelStats = ({ channel, currencyTotal, days }) => {
   );
 };
 
-const ChannelParts = ({ parts }) => (
+export const ChannelParts = ({ parts }) => (
   <div className="channel-parts">
     {parts.map((part) => (
       <div key={part.label} className="channel-part" title={part.title}>

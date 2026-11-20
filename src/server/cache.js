@@ -139,6 +139,82 @@ const bestSellers = createStore({
   file: "bestsellers-v4.json",
 });
 
+// Per-day supplier figures, one field per "<day>|<channel>" so requests
+// working on different channels never overwrite each other. The hash grows
+// with every day kept, so only the fields a request needs are read.
+const SUPPLIER_DAYS = "supplierdays-v1";
+const supplierDaysFile = path.join(
+  process.cwd(),
+  ".sales-cache",
+  `${SUPPLIER_DAYS}.json`,
+);
+// Keeps each write to Redis well under its request size limit.
+const SUPPLIER_WRITE_BYTES = 400000;
+
+const readSupplierDaysFile = () => {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(supplierDaysFile, "utf8"));
+    return isObject(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+export async function loadSupplierDays(fields) {
+  if (!fields.length) return {};
+  const client = getRedis();
+  if (client) {
+    try {
+      const values = await client.hmget(`sales:${SUPPLIER_DAYS}`, ...fields);
+      if (!isObject(values)) return {};
+      return Object.fromEntries(
+        Object.entries(values).filter(([, value]) => isObject(value)),
+      );
+    } catch {
+      return {};
+    }
+  }
+  const all = readSupplierDaysFile();
+  return Object.fromEntries(
+    fields.filter((field) => all[field]).map((field) => [field, all[field]]),
+  );
+}
+
+export async function saveSupplierDays(entries) {
+  const fields = Object.keys(entries);
+  if (!fields.length) return;
+  const client = getRedis();
+  if (client) {
+    try {
+      let batch = {};
+      let size = 0;
+      for (const field of fields) {
+        const bytes = JSON.stringify(entries[field]).length;
+        if (size && size + bytes > SUPPLIER_WRITE_BYTES) {
+          await client.hset(`sales:${SUPPLIER_DAYS}`, batch);
+          batch = {};
+          size = 0;
+        }
+        batch[field] = entries[field];
+        size += bytes;
+      }
+      await client.hset(`sales:${SUPPLIER_DAYS}`, batch);
+    } catch {
+      // The cache is best-effort.
+    }
+    return;
+  }
+  try {
+    const all = { ...readSupplierDaysFile(), ...entries };
+    fs.mkdirSync(path.dirname(supplierDaysFile), { recursive: true });
+    const temp = `${supplierDaysFile}.tmp`;
+    fs.writeFileSync(temp, JSON.stringify(all));
+    fs.renameSync(temp, supplierDaysFile);
+  } catch {
+    // The cache is best-effort.
+  }
+}
+
 export const loadDayCache = days.load;
 export const saveDayCache = days.save;
 export const loadSkuCache = skus.load;
