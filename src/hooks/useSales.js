@@ -56,6 +56,23 @@ function mergeTiles(tiles) {
       mergeTiles(tiles.map((t) => t.parts[i])),
     );
   }
+  // Prime / Premium figures, added up across the chunks too.
+  if (first.levels) {
+    merged.levels = Object.fromEntries(
+      Object.keys(first.levels).map((level) => {
+        const figures = tiles.map((t) => t.levels?.[level]);
+        const sum = (field) =>
+          figures.reduce((total, f) => total + (f?.[field] || 0), 0);
+        return [
+          level,
+          {
+            count: sum("count"),
+            revenue: Math.round(sum("revenue") * 100) / 100,
+          },
+        ];
+      }),
+    );
+  }
   return merged;
 }
 

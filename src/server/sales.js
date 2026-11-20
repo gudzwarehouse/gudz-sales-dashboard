@@ -278,8 +278,25 @@ function mergeGroups(results) {
         .filter((part) => !part.excludeFromOrderCount)
         .reduce((sum, part) => sum + part.orderCount, 0),
       revenue: roundMoney(revenue),
+      parts: tile.parts.map(withoutLevels),
     };
   });
+}
+
+// Prime and Premium orders get their own rows on the tile, so a part's row
+// (e.g. FBM) leaves them out; the tile's own totals still include them.
+function withoutLevels({ levels, ...part }) {
+  if (!levels) return part;
+  const counted = SERVICE_LEVELS.map((level) => levels[level]);
+  return {
+    ...part,
+    orderCount:
+      part.orderCount -
+      counted.reduce((sum, figures) => sum + figures.count, 0),
+    revenue: roundMoney(
+      part.revenue - counted.reduce((sum, figures) => sum + figures.revenue, 0),
+    ),
+  };
 }
 
 export function buildChannels({ wanted, fresh, cache, errors }) {
