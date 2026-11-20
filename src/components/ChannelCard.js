@@ -37,7 +37,7 @@ const ChannelStats = ({ channel, currencyTotal, days }) => {
 const ChannelParts = ({ parts }) => (
   <div className="channel-parts">
     {parts.map((part) => (
-      <div key={part.label} className="channel-part">
+      <div key={part.label} className="channel-part" title={part.title}>
         <span className="channel-part-label">{part.label}</span>
         <span>{count(part.orderCount)} orders</span>
         <span className="channel-part-revenue">
@@ -53,30 +53,17 @@ export const SERVICE_LEVEL_LABELS = {
   premium: { label: "Premium", detail: "Next day / second day" },
 };
 
-// Prime and Premium orders, each shown as its own block with its share of
-// the channel's orders.
-const ChannelLevels = ({ levels, orderCount, currency }) => (
-  <div className="channel-levels">
-    {Object.entries(SERVICE_LEVEL_LABELS).map(([level, text]) => {
-      const figures = levels[level];
-      const share = orderCount ? (figures.count / orderCount) * 100 : 0;
-      return (
-        <div key={level} className={`channel-level channel-level-${level}`}>
-          <div className="channel-level-head">
-            <span className="channel-level-label">{text.label}</span>
-            <span className="channel-level-detail">{text.detail}</span>
-          </div>
-          <div className="channel-part">
-            <span>{count(figures.count)} orders</span>
-            <span>{share.toFixed(1)}%</span>
-            <span className="channel-part-revenue">
-              {money(figures.revenue, currency)}
-            </span>
-          </div>
-        </div>
-      );
-    })}
-  </div>
+// Prime and Premium orders, laid out like the FBM / FBA rows.
+const ChannelLevels = ({ levels, currency }) => (
+  <ChannelParts
+    parts={Object.entries(SERVICE_LEVEL_LABELS).map(([level, text]) => ({
+      label: text.label,
+      title: text.detail,
+      orderCount: levels[level].count,
+      revenue: levels[level].revenue,
+      currency,
+    }))}
+  />
 );
 
 const ChannelCard = ({ channel, currencyTotal, days, best, onSelect }) => {
@@ -119,11 +106,7 @@ const ChannelCard = ({ channel, currencyTotal, days, best, onSelect }) => {
         <ChannelParts parts={channel.parts} />
       )}
       {!channel.error && channel.levels && (
-        <ChannelLevels
-          levels={channel.levels}
-          orderCount={channel.orderCount}
-          currency={channel.currency}
-        />
+        <ChannelLevels levels={channel.levels} currency={channel.currency} />
       )}
       {!channel.error && best && (
         <ChannelBest best={best.data?.channels?.[channel.key]} status={best} />
