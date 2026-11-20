@@ -432,6 +432,45 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.channel-levels {
+  margin-top: 14px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.channel-level {
+  padding-top: 10px;
+}
+
+.channel-level + .channel-level {
+  margin-top: 6px;
+}
+
+.channel-level-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.channel-level-label {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.channel-level-prime .channel-level-label {
+  color: #1a98ff;
+}
+
+.channel-level-detail {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.channel-level .channel-part {
+  padding-top: 4px;
+}
+
 .channel-part-label {
   font-weight: 700;
   color: var(--text);

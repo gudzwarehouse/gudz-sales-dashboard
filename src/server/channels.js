@@ -7,6 +7,7 @@ export const CHANNELS = [
     group: "amazon_uk",
     groupLabel: "Fulfilled by Merchant (FBM)",
     groupShortLabel: "FBM",
+    serviceLevels: true,
     account: "UK",
     currency: "GBP",
   },
@@ -18,6 +19,7 @@ export const CHANNELS = [
     group: "amazon_uk",
     groupLabel: "Fulfilled by Amazon (FBA)",
     groupShortLabel: "FBA",
+    serviceLevels: true,
     account: "UK",
     currency: "GBP",
   },
@@ -111,6 +113,21 @@ export const channelOwnsOrder = (channel, order) => {
     (!channel.fulfilment || (channel.fulfilment === "fba") === isFba) &&
     (!channel.segment || (channel.segment === "wholesale") === isWholesale)
   );
+};
+
+// Channels with `serviceLevels` also count their Prime and Premium orders.
+// Amazon tags Seller Fulfilled Prime orders "AmazonMerchantPrime". Premium
+// orders are non-Prime ones sent by a faster requested shipping class
+// ("NextDay", "SecondDay"); Prime orders use classes such as "Prime NextDay",
+// so an order is never counted in both.
+export const SERVICE_LEVELS = ["prime", "premium"];
+const PRIME_TAG = /AmazonMerchantPrime/i;
+const PREMIUM_CLASSES = ["NextDay", "SecondDay"];
+
+export const orderServiceLevel = (order) => {
+  if (PRIME_TAG.test(order.OrderTags || "")) return "prime";
+  if (PREMIUM_CLASSES.includes(order.RequestedShippingClass)) return "premium";
+  return null;
 };
 
 export const MIRAKL_CHANNELS = [

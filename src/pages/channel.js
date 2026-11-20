@@ -3,6 +3,7 @@ import { Link } from "gatsby";
 import "../styles/dashboard.css";
 import logo from "../images/gudz-logo.webp";
 import { BestKpi, bestLines } from "../components/BestSellers";
+import { SERVICE_LEVEL_LABELS } from "../components/ChannelCard";
 import ChannelLogo from "../components/ChannelLogo";
 import Notice from "../components/Notice";
 import SectionHead from "../components/SectionHead";
@@ -71,6 +72,27 @@ const Overview = ({ tile, days, currencyTotal }) => {
           />
         ))}
       </div>
+      {tile.levels && (
+        <div className="kpis">
+          {Object.entries(SERVICE_LEVEL_LABELS).map(([level, text]) => {
+            const figures = tile.levels[level];
+            const orderShare = tile.orderCount
+              ? (figures.count / tile.orderCount) * 100
+              : 0;
+            return (
+              <Stat
+                key={level}
+                label={`${text.label} orders (${text.detail})`}
+                value={count(figures.count)}
+                sub={`${orderShare.toFixed(1)}% of orders · ${money(
+                  figures.revenue,
+                  tile.currency,
+                )}`}
+              />
+            );
+          })}
+        </div>
+      )}
     </>
   );
 };

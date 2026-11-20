@@ -6,9 +6,11 @@ import {
   HELM_IGNORED_STATUS,
   MIRAKL_CHANNELS,
   MIRAKL_IGNORED_STATES,
+  orderServiceLevel,
+  SERVICE_LEVELS,
 } from "./channels";
 import { fetchChannelAdvisorOrders } from "./channelAdvisor";
-import { isEntry } from "./cache";
+import { isChannelEntry } from "./cache";
 import { addDays, eachDay, londonDayOf, londonDayStartUtc } from "./dates";
 import { fetchHelmOrders } from "./helm";
 import { fetchMiraklOrders } from "./mirakl";
@@ -56,13 +58,24 @@ export function findConfigErrors(accounts, mirakl, helm) {
   return errors;
 }
 
+const emptyLevels = () =>
+  Object.fromEntries(
+    SERVICE_LEVELS.map((level) => [level, { count: 0, revenue: 0 }]),
+  );
+
+const roundMoney = (amount) => Math.round(amount * 100) / 100;
+
 function emptyDays(from, to, keys) {
   const days = {};
   for (const day of eachDay(from, to)) {
     days[day] = Object.fromEntries(
       ALL_CHANNELS.filter((c) => keys.has(c.key)).map((c) => [
         c.key,
-        { count: 0, revenue: 0 },
+        {
+          count: 0,
+          revenue: 0,
+          ...(c.serviceLevels && { levels: emptyLevels() }),
+        },
       ]),
     );
   }
@@ -90,7 +103,10 @@ async function loadChannelAdvisor({
   const orders = await fetchChannelAdvisorOrders(creds, filter);
   for (const order of orders) {
     const channel = channels.find((c) => channelOwnsOrder(c, order));
-    if (channel) record(channel.key, order.CheckoutDateUtc, order.TotalPrice);
+    if (!channel) continue;
+    record(channel.key, order.CheckoutDateUtc, order.TotalPrice, undefined, {
+      level: channel.serviceLevels ? orderServiceLevel(order) : null,
+    });
   }
 }
 
@@ -133,13 +149,19 @@ export async function fetchDays(from, to, { accounts, mirakl, helm, keys }) {
   const days = emptyDays(from, to, keys);
   const errors = {};
 
-  const record = (key, timestamp, total, currency) => {
+  const record = (key, timestamp, total, currency, { level } = {}) => {
     const entry = days[londonDayOf(timestamp)]?.[key];
     if (!entry) return;
     const amount = Number(total);
+    const value = Number.isFinite(amount) ? amount : 0;
     entry.count += 1;
-    entry.revenue += Number.isFinite(amount) ? amount : 0;
+    entry.revenue += value;
     if (currency) entry.currency = currency;
+    const bucket = level && entry.levels?.[level];
+    if (bucket) {
+      bucket.count += 1;
+      bucket.revenue += value;
+    }
   };
 
   const guard = (channelKeys, task) =>
@@ -193,6 +215,23 @@ export async function fetchDays(from, to, { accounts, mirakl, helm, keys }) {
   return { days, errors };
 }
 
+// Adds up Prime / Premium figures; null when none of the inputs has them.
+function sumLevels(list) {
+  const present = list.filter(Boolean);
+  if (!present.length) return null;
+  const total = emptyLevels();
+  for (const levels of present) {
+    for (const level of SERVICE_LEVELS) {
+      total[level].count += levels[level]?.count || 0;
+      total[level].revenue += levels[level]?.revenue || 0;
+    }
+  }
+  for (const level of SERVICE_LEVELS) {
+    total[level].revenue = roundMoney(total[level].revenue);
+  }
+  return total;
+}
+
 // Channels that share a `group` (Amazon UK FBM and FBA, Shopify retail and wholesale) are fetched and cached
 // separately but shown as one tile whose `parts` hold each fulfilment type.
 function mergeGroups(results) {
@@ -231,12 +270,14 @@ function mergeGroups(results) {
       return { ...tile, error: `${failed.label}: ${failed.error}` };
     }
     const revenue = tile.parts.reduce((sum, part) => sum + part.revenue, 0);
+    const levels = sumLevels(tile.parts.map((part) => part.levels));
     return {
       ...tile,
+      ...(levels && { levels }),
       orderCount: tile.parts
         .filter((part) => !part.excludeFromOrderCount)
         .reduce((sum, part) => sum + part.orderCount, 0),
-      revenue: Math.round(revenue * 100) / 100,
+      revenue: roundMoney(revenue),
     };
   });
 }
@@ -253,16 +294,20 @@ export function buildChannels({ wanted, fresh, cache, errors }) {
     if (errors[channel.key]) return { ...result, error: errors[channel.key] };
 
     let revenue = 0;
+    const dayLevels = [];
     for (const day of wanted) {
       const entry = fresh[day]?.[channel.key] || cache[day]?.[channel.key];
-      if (!isEntry(entry)) {
+      if (!isChannelEntry(channel, entry)) {
         return { ...result, error: "No data was returned for this channel" };
       }
       result.orderCount += entry.count;
       revenue += entry.revenue;
       result.currency = entry.currency || result.currency;
+      if (entry.levels) dayLevels.push(entry.levels);
     }
-    result.revenue = Math.round(revenue * 100) / 100;
+    result.revenue = roundMoney(revenue);
+    const levels = channel.serviceLevels && sumLevels(dayLevels);
+    if (levels) result.levels = levels;
     return result;
   });
   return mergeGroups(results);

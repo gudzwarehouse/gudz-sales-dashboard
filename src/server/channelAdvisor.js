@@ -44,7 +44,7 @@ async function getAccessToken(creds, { force = false } = {}) {
 }
 
 const ORDER_FIELDS =
-  "ID,SiteName,SiteAccountID,TotalPrice,CheckoutDateUtc,DistributionCenterTypeRollup,OrderTags";
+  "ID,SiteName,SiteAccountID,TotalPrice,CheckoutDateUtc,DistributionCenterTypeRollup,OrderTags,RequestedShippingClass";
 
 function ordersUrl(creds, filter, skip, withItems) {
   const url = new URL(ORDERS_URL);

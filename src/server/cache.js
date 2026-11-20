@@ -9,6 +9,11 @@ export const isEntry = (entry) =>
   Number.isFinite(entry.count) &&
   Number.isFinite(entry.revenue);
 
+// A channel that counts Prime / Premium orders needs those figures too, so
+// days cached before they were added are fetched again.
+export const isChannelEntry = (channel, entry) =>
+  isEntry(entry) && (!channel.serviceLevels || Boolean(entry.levels));
+
 const isObject = (value) =>
   Boolean(value) && typeof value === "object" && !Array.isArray(value);
 

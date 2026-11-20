@@ -1,7 +1,7 @@
 import { ALL_CHANNELS } from "../server/channels";
 import {
   CACHE_MIN_AGE_DAYS,
-  isEntry,
+  isChannelEntry,
   loadDayCache,
   saveDayCache,
 } from "../server/cache";
@@ -17,9 +17,12 @@ import { buildChannels, fetchDays, findConfigErrors } from "../server/sales";
 
 function findNeededDays({ wanted, cache, cacheableUpTo, refresh }) {
   const needed = {};
-  for (const { key } of ALL_CHANNELS) {
-    needed[key] = wanted.filter(
-      (day) => refresh || day > cacheableUpTo || !isEntry(cache[day]?.[key]),
+  for (const channel of ALL_CHANNELS) {
+    needed[channel.key] = wanted.filter(
+      (day) =>
+        refresh ||
+        day > cacheableUpTo ||
+        !isChannelEntry(channel, cache[day]?.[channel.key]),
     );
   }
   return needed;

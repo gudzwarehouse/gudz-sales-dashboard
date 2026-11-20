@@ -48,6 +48,37 @@ const ChannelParts = ({ parts }) => (
   </div>
 );
 
+export const SERVICE_LEVEL_LABELS = {
+  prime: { label: "Prime", detail: "Seller Fulfilled Prime" },
+  premium: { label: "Premium", detail: "Next day / second day" },
+};
+
+// Prime and Premium orders, each shown as its own block with its share of
+// the channel's orders.
+const ChannelLevels = ({ levels, orderCount, currency }) => (
+  <div className="channel-levels">
+    {Object.entries(SERVICE_LEVEL_LABELS).map(([level, text]) => {
+      const figures = levels[level];
+      const share = orderCount ? (figures.count / orderCount) * 100 : 0;
+      return (
+        <div key={level} className={`channel-level channel-level-${level}`}>
+          <div className="channel-level-head">
+            <span className="channel-level-label">{text.label}</span>
+            <span className="channel-level-detail">{text.detail}</span>
+          </div>
+          <div className="channel-part">
+            <span>{count(figures.count)} orders</span>
+            <span>{share.toFixed(1)}%</span>
+            <span className="channel-part-revenue">
+              {money(figures.revenue, currency)}
+            </span>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+);
+
 const ChannelCard = ({ channel, currencyTotal, days, best, onSelect }) => {
   const clickable = !channel.error && onSelect;
   const onKeyDown = (event) => {
@@ -86,6 +117,13 @@ const ChannelCard = ({ channel, currencyTotal, days, best, onSelect }) => {
       )}
       {!channel.error && channel.parts && (
         <ChannelParts parts={channel.parts} />
+      )}
+      {!channel.error && channel.levels && (
+        <ChannelLevels
+          levels={channel.levels}
+          orderCount={channel.orderCount}
+          currency={channel.currency}
+        />
       )}
       {!channel.error && best && (
         <ChannelBest best={best.data?.channels?.[channel.key]} status={best} />
