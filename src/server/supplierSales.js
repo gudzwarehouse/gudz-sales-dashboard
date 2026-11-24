@@ -8,7 +8,7 @@ import {
   tileLabel,
 } from "./channels";
 import { resolveCatalogue } from "./catalogue";
-import { fetchChannelAdvisorOrders } from "./channelAdvisor";
+import { fetchChannelAdvisorOrders, ORDER_DATE } from "./channelAdvisor";
 import {
   loadBestSellerCache,
   loadSupplierDays,
@@ -40,8 +40,8 @@ const toLine = (day, orderId, sku, title, quantity, revenue) => ({
 
 async function caSections({ channels, creds, since, until }) {
   const filter =
-    `SiteName eq '${channels[0].siteName}' and CheckoutDateUtc ge ${since}` +
-    ` and CheckoutDateUtc lt ${until}`;
+    `SiteName eq '${channels[0].siteName}' and ${ORDER_DATE} ge ${since}` +
+    ` and ${ORDER_DATE} lt ${until}`;
   const orders = await fetchChannelAdvisorOrders(creds, filter, {
     withItems: true,
   });
@@ -53,7 +53,7 @@ async function caSections({ channels, creds, since, until }) {
       .flatMap((order) =>
         (order.Items || []).map((item) => ({
           ...toLine(
-            londonDayOf(order.CheckoutDateUtc),
+            londonDayOf(order[ORDER_DATE]),
             order.ID,
             item.Sku,
             item.Title,

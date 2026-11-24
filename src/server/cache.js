@@ -34,7 +34,7 @@ const HSET_BATCH = 200;
 
 // Each store remembers what it last read or wrote so that only changed
 // fields are sent back to Redis.
-function createStore({ name, file, reloadEachRequest = false, migrate }) {
+function createStore({ name, file, reloadEachRequest = false }) {
   const filePath = path.join(process.cwd(), ".sales-cache", file);
   let data = null;
   let written = new Map();
@@ -62,7 +62,6 @@ function createStore({ name, file, reloadEachRequest = false, migrate }) {
     // the day cache is read again on each request to see their writes.
     if (data && !(reloadEachRequest && getRedis())) return data;
     data = await read();
-    if (migrate) migrate(data);
     written = new Map(
       Object.entries(data).map(([field, value]) => [
         field,
@@ -111,17 +110,12 @@ function createStore({ name, file, reloadEachRequest = false, migrate }) {
   return { load, save };
 }
 
-// Days cached before Amazon FBA UK was split out still count FBA orders under
-// Amazon UK, so drop that figure and let it be fetched again.
+// v2: ChannelAdvisor orders are dated by order date and cancelled ones left
+// out, so days cached under the old rules (checkout date) are fetched again.
 const days = createStore({
-  name: "days",
-  file: "days.json",
+  name: "days-v2",
+  file: "days-v2.json",
   reloadEachRequest: true,
-  migrate: (cache) => {
-    for (const day of Object.values(cache)) {
-      if (day?.amazon_uk && !day.amazon_fba_uk) delete day.amazon_uk;
-    }
-  },
 });
 
 // SKU -> supplier lookups from Helm, which are slow to fetch.
@@ -135,14 +129,14 @@ const catalogue = createStore({ name: "catalogue", file: "catalogue.json" });
 // entry where wholesale is left out. Days that are over never change, so each
 // is worked out once.
 const bestSellers = createStore({
-  name: "bestsellers-v4",
-  file: "bestsellers-v4.json",
+  name: "bestsellers-v5",
+  file: "bestsellers-v5.json",
 });
 
 // Per-day supplier figures, one field per "<day>|<channel>" so requests
 // working on different channels never overwrite each other. The hash grows
 // with every day kept, so only the fields a request needs are read.
-const SUPPLIER_DAYS = "supplierdays-v1";
+const SUPPLIER_DAYS = "supplierdays-v2";
 const supplierDaysFile = path.join(
   process.cwd(),
   ".sales-cache",

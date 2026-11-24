@@ -9,7 +9,7 @@ import {
   orderServiceLevel,
   SERVICE_LEVELS,
 } from "./channels";
-import { fetchChannelAdvisorOrders } from "./channelAdvisor";
+import { fetchChannelAdvisorOrders, ORDER_DATE } from "./channelAdvisor";
 import { isChannelEntry } from "./cache";
 import { addDays, eachDay, londonDayOf, londonDayStartUtc } from "./dates";
 import { fetchHelmOrders } from "./helm";
@@ -97,14 +97,14 @@ async function loadChannelAdvisor({
     .map((name) => `SiteName eq '${name}'`)
     .join(" or ");
   const filter =
-    `(${sites}) and CheckoutDateUtc ge ${since}` +
-    ` and CheckoutDateUtc lt ${until}`;
+    `(${sites}) and ${ORDER_DATE} ge ${since}` +
+    ` and ${ORDER_DATE} lt ${until}`;
 
   const orders = await fetchChannelAdvisorOrders(creds, filter);
   for (const order of orders) {
     const channel = channels.find((c) => channelOwnsOrder(c, order));
     if (!channel) continue;
-    record(channel.key, order.CheckoutDateUtc, order.TotalPrice, undefined, {
+    record(channel.key, order[ORDER_DATE], order.TotalPrice, undefined, {
       level: channel.serviceLevels ? orderServiceLevel(order) : null,
     });
   }

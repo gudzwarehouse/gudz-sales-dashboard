@@ -44,7 +44,16 @@ async function getAccessToken(creds, { force = false } = {}) {
 }
 
 const ORDER_FIELDS =
-  "ID,SiteName,SiteAccountID,TotalPrice,CheckoutDateUtc,DistributionCenterTypeRollup,OrderTags,RequestedShippingClass";
+  "ID,SiteName,SiteAccountID,TotalPrice,CreatedDateUtc,DistributionCenterTypeRollup,OrderTags,RequestedShippingClass,ShippingStatus";
+
+// Orders are dated by when the customer placed them, as in Seller Central and
+// CA's own exports. The checkout date is only set once payment completes, so
+// it can fall on a later day, and an unpaid order is given one when cancelled.
+export const ORDER_DATE = "CreatedDateUtc";
+
+// A cancelled order never counts. CA ignores a ShippingStatus $filter, so
+// these are dropped after fetching.
+const isCancelled = (order) => order.ShippingStatus === "Canceled";
 
 function ordersUrl(creds, filter, skip, withItems) {
   const url = new URL(ORDERS_URL);
@@ -69,7 +78,9 @@ export async function fetchChannelAdvisorOrders(
 ) {
   let token = await getAccessToken(creds);
 
-  return fetchPaged(async (skip) => {
+  // Cancelled orders are dropped only once every page is in, because paging
+  // stops at the first page shorter than PAGE_SIZE.
+  const orders = await fetchPaged(async (skip) => {
     const call = () =>
       requestJson(
         ordersUrl(creds, filter, skip, withItems),
@@ -90,6 +101,7 @@ export async function fetchChannelAdvisorOrders(
     }
     return { items: body.value, total: Number(body["@odata.count"]) };
   }, PAGE_SIZE);
+  return orders.filter((order) => !isCancelled(order));
 }
 
 const PRODUCTS_URL = "https://api.channeladvisor.com/v1/Products";
