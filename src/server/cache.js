@@ -2,7 +2,11 @@ import fs from "fs";
 import path from "path";
 import { Redis } from "@upstash/redis";
 
-export const CACHE_MIN_AGE_DAYS = 1;
+// A day is saved for good only once it is this many days old. Some orders,
+// nearly all Amazon UK ones held until payment clears, reach ChannelAdvisor
+// hours or days after the day they were placed, so newer days are always
+// fetched live to pick them up.
+export const CACHE_MIN_AGE_DAYS = 3;
 
 export const isEntry = (entry) =>
   Boolean(entry) &&
